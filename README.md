@@ -1,31 +1,16 @@
-# <应用名称>
+# NULL
 
-<!--
-  ============================================================================
-  首次推送之前 —— 把下面这三处占位符换成真实内容，然后删掉这段注释。
-  一份仍然写着「<应用名称>」的 README，是让项目看起来被放弃最快的办法。
-  ============================================================================
--->
-
-> **<一句话说明这个应用做什么、给谁用>**
-
-<!--
-  界面做出来之后，在这里放 2–4 张真实截图。这是访客决定要不要继续读下去时
-  最强的单一信号。
-  <p align="center">
-    <img src="docs/screenshots/home.png" width="30%" />
-  </p>
--->
+> **一个在设备上运行小语言模型的安卓应用：对话、历史、备份，以及让它的说法保持诚实的那些检查。**
 
 ## 功能
 
-- <功能一>
-- <功能二>
-- <功能三>
+- **完全在手机上运行**：模型下载完成之后断网也能用，对话不出设备
+- **对话与历史**：流式回复、重新生成、对话内搜索、重命名 / 置顶 / 导出备份
+- **不收集任何数据**：没有分析、没有崩溃上报、没有账号；隐私契约由脚本强制执行
 
 ## 截图
 
-_等第一个可用版本出来之后补。_
+_暂未提供，界面稳定后再补。_
 
 ## 环境要求
 
@@ -41,8 +26,8 @@ _等第一个可用版本出来之后补。_
 ## 构建
 
 ```bash
-git clone https://github.com/KAYOYAK/<REPO_NAME>.git
-cd <REPO_NAME>
+git clone https://github.com/KAYOYAK/DemoApp.git
+cd DemoApp
 
 # 告诉 Gradle 你的 SDK 在哪里。这个文件是本机专用的，已加入 gitignore。
 echo "sdk.dir=$ANDROID_HOME" > local.properties
@@ -109,11 +94,6 @@ gradle/libs.versions.toml   依赖版本的唯一来源
 ```
 
 ## 隐私
-
-<!--
-  如果这个应用收集或传输任何东西，在这里说明，并在上架前补一份隐私政策。
-  如果它确实什么都不收集，也要明确写出来 —— 这是一个卖点。
--->
 
 这个应用什么都不收集。没有分析、没有崩溃上报、没有遥测，也没有账号。网络只用来下载模型，别的什么都不做；模型到了设备上之后，把网络关掉它照样工作。
 
@@ -187,7 +167,7 @@ gradle/libs.versions.toml   依赖版本的唯一来源
   替换 LICENSE，然后更新这一节和下面的徽章。
 -->
 
-[![CI](https://github.com/KAYOYAK/<REPO_NAME>/actions/workflows/ci.yml/badge.svg)](https://github.com/KAYOYAK/<REPO_NAME>/actions/workflows/ci.yml)
+[![CI](https://github.com/KAYOYAK/DemoApp/actions/workflows/ci.yml/badge.svg)](https://github.com/KAYOYAK/DemoApp/actions/workflows/ci.yml)
 
 ## 已经做了什么，接下来做什么
 
