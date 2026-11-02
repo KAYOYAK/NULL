@@ -26,7 +26,7 @@ _暂未提供，界面稳定后再补。_
 ## 构建
 
 ```bash
-git clone https://github.com/KAYOYAK/DemoApp.git
+git clone https://github.com/KAYOYAK/NULL.git
 cd DemoApp
 
 # 告诉 Gradle 你的 SDK 在哪里。这个文件是本机专用的，已加入 gitignore。
@@ -167,7 +167,7 @@ gradle/libs.versions.toml   依赖版本的唯一来源
   替换 LICENSE，然后更新这一节和下面的徽章。
 -->
 
-[![CI](https://github.com/KAYOYAK/DemoApp/actions/workflows/ci.yml/badge.svg)](https://github.com/KAYOYAK/DemoApp/actions/workflows/ci.yml)
+[![CI](https://github.com/KAYOYAK/NULL/actions/workflows/ci.yml/badge.svg)](https://github.com/KAYOYAK/NULL/actions/workflows/ci.yml)
 
 ## 已经做了什么，接下来做什么
 
