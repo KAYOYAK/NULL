@@ -12,16 +12,19 @@
     -->
 
     <!--
-      The launcher's name: what the string `NULL` was replaced by.
+      The launcher's name, and the name every screen shows for the app.
 
-      `NULL` is what a generator writes when nobody has named the app yet, and the launcher
-      was showing it — through the release build, the signing and the published APK. The
-      name is the user's to choose, so this line carries the one the repository, the release
-      and the APK already use, and nothing else has to move with it: the lock screen and the
-      diagnostics subject take their copy of it from here (%1$s), which is why they are not
-      three names to keep in step.
+      History, because the word has been both an accident and a decision. `NULL` is
+      what the project generator wrote when nobody had named the app yet, and v1.0
+      shipped with it. v1.0.1 replaced it with `DemoApp` because a name had to exist.
+      On 2026-11-02 the owner named the product `NULL` on purpose (「应用名是 NULL」),
+      so this line says the generator's word again — this time as a choice recorded in
+      docs/ROADMAP.md rather than a default nobody picked.
+
+      The name lives here once: the lock screen and the diagnostics subject take their
+      copy of it from here (%1$s), which is why they are not three names to keep in step.
     -->
-    <string name="app_name" translatable="false">DemoApp</string>
+    <string name="app_name" translatable="false">NULL</string>
 
     <!-- ============================================================ 对话页 === -->
 
