@@ -157,15 +157,7 @@ gradle/libs.versions.toml   依赖版本的唯一来源
 
 ## 许可证
 
-[MIT](LICENSE) © 2026 KAYOYAK
-
-<!--
-  趁仓库还年轻换许可证很容易，一旦有了外部贡献就很难了。如果你更想要：
-    Apache-2.0  —— 增加明确的专利授权；在 Android 生态里很常见（AOSP 本身就是）。
-                   如果你以后可能想要企业贡献者，推荐这个。
-    GPL-3.0     —— copyleft：衍生作品必须保持开源。如果你想要这个就用它。
-  替换 LICENSE，然后更新这一节和下面的徽章。
--->
+[Apache-2.0](LICENSE) © 2026 Shizhou Xu
 
 [![CI](https://github.com/KAYOYAK/NULL/actions/workflows/ci.yml/badge.svg)](https://github.com/KAYOYAK/NULL/actions/workflows/ci.yml)
 
