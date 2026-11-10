@@ -12,19 +12,47 @@
 
 <p align="center"><img src="docs/shots/icon.png" width="88" alt="NULL 图标"></p>
 
-| 对话 | 模型 | 聊天记录 |
-| --- | --- | --- |
-| ![对话](docs/shots/01-chat.png) | ![模型](docs/shots/02-models.png) | ![聊天记录](docs/shots/03-history.png) |
+### 对话
 
-| 设置 | 关于 |
+| 一轮完整的回答 | 消息操作 | 深色 |
+| --- | --- | --- |
+| ![一轮完整的回答](docs/shots/01-chat.png) | ![消息操作](docs/shots/06-message-actions.png) | ![深色](docs/shots/11-chat-dark.png) |
+
+### 模型
+
+| 模型管理：已安装 / 目录 / 说法方式 | 摘要校验：和发布时一致 |
 | --- | --- |
-| ![设置](docs/shots/04-settings.png) | ![关于](docs/shots/05-about.png) |
+| ![模型管理](docs/shots/02-models.png) | ![摘要校验](docs/shots/07-verify.png) |
+
+### 聊天记录
+
+| 本机上的对话 | 搜索 | 删除 |
+| --- | --- | --- |
+| ![聊天记录](docs/shots/03-history.png) | ![搜索](docs/shots/08-history-search.png) | ![删除确认](docs/shots/09-history-delete.png) |
+
+### 设置
+
+| 外观 · 字号 · 消息时间 · 应用锁 | 运行在 / 提示词 / 回答 | 深色设置 |
+| --- | --- | --- |
+| ![设置](docs/shots/04-settings.png) | ![运行在](docs/shots/10-settings-sampler.png) | ![深色设置](docs/shots/12-settings-dark.png) |
+
+### 关于
+
+| 原则、签名、免责声明 |
+| --- |
+| ![关于](docs/shots/05-about.png) |
+
+### 动图
 
 ![从输入到回答的完整一轮](docs/demo.gif)
 
-> 截图与动图取自仓库自身的 debug 构建，跑在 Android 16 模拟器上（x86_64，CPU 后端 ——
-> 模拟器不提供 OpenCL，GPU delegate 初始化失败后退回 CPU）。卡片上的「9.091 秒 · 1.8 tok/s」
-> 是那台模拟器的实测值；真机通常快得多，这个数字不代表上限。
+> 截图与动图取自仓库自身的 debug 构建（「关于」页因此显示开发版签名），跑在 Android 16 x86_64 模拟器上。
+> 模拟器不提供 OpenCL，GPU delegate 初始化失败后自动退回 CPU —— 设置页那句「现在运行在处理器上」与日志
+> （`OpenCL not supported on this platform` → `Failed to initialize WebGPU environment: INTERNAL: No adapters found`）
+> 说的是同一件事。卡片上的「9.091 秒 · 1.8 tok/s」是那台模拟器的实测值；真机快得多，这个数字不代表上限。
+>
+> 两张没拍到：**跑分**（点下去约 7 秒后回到空闲，既没有结果对话框也没有失败提示，原因未查明）和
+> **应用锁的锁屏**（开关打开后重启，界面停在模型加载态，没能验证到锁屏）。功能在代码里，只是这台机器上没取到真实的图。
 
 ## 环境要求
 
