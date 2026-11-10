@@ -10,7 +10,21 @@
 
 ## 截图
 
-_暂未提供，界面稳定后再补。_
+<p align="center"><img src="docs/shots/icon.png" width="88" alt="NULL 图标"></p>
+
+| 对话 | 模型 | 聊天记录 |
+| --- | --- | --- |
+| ![对话](docs/shots/01-chat.png) | ![模型](docs/shots/02-models.png) | ![聊天记录](docs/shots/03-history.png) |
+
+| 设置 | 关于 |
+| --- | --- |
+| ![设置](docs/shots/04-settings.png) | ![关于](docs/shots/05-about.png) |
+
+![从输入到回答的完整一轮](docs/demo.gif)
+
+> 截图与动图取自仓库自身的 debug 构建，跑在 Android 16 模拟器上（x86_64，CPU 后端 ——
+> 模拟器不提供 OpenCL，GPU delegate 初始化失败后退回 CPU）。卡片上的「9.091 秒 · 1.8 tok/s」
+> 是那台模拟器的实测值；真机通常快得多，这个数字不代表上限。
 
 ## 环境要求
 
