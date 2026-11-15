@@ -3,6 +3,7 @@ package com.kayoyak.demoapp.web
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
 import android.os.SystemClock
@@ -27,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kayoyak.demoapp.data.settings.AppTheme
 import com.kayoyak.demoapp.diagnostics.AppLock
 import com.kayoyak.demoapp.theme.DemoAppTheme
 import com.kayoyak.demoapp.ui.lock.DeviceAuth
@@ -62,6 +64,7 @@ class WebChatActivity : ComponentActivity() {
     private var leftAt by mutableStateOf<Long?>(null)
     private var unlockedAt by mutableStateOf<Long?>(null)
     private lateinit var lockOverlay: ComposeView
+    private lateinit var rootView: FrameLayout
 
     /** Text shared in from another app, held until the page can take it. */
     private var pendingShare: String? = null
@@ -171,6 +174,7 @@ class WebChatActivity : ComponentActivity() {
         }
 
         val root = FrameLayout(this)
+        rootView = root
         root.addView(
             webView,
             FrameLayout.LayoutParams(
@@ -199,6 +203,7 @@ class WebChatActivity : ComponentActivity() {
         root.addView(lockOverlay)
 
         setContentView(root)
+        applyWindowBackground()
         syncLock()
         takeShare(intent)
         webView.loadUrl("https://appassets.androidplatform.net/assets/web/index.html")
@@ -249,7 +254,29 @@ class WebChatActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        applyWindowBackground()
         syncLock()
+    }
+
+    /**
+     * Paints the window to match the page.
+     *
+     * Edge-to-edge leaves the space behind the system bars to the window, which
+     * kept its default while the page turned dark: a white band under a black
+     * conversation. Both are read from the same setting the page uses.
+     */
+    private fun applyWindowBackground() {
+        val settings = (application as DemoApplication).container.settingsStore.settings.value
+        val dark = when (settings.chosenTheme) {
+            AppTheme.LIGHT -> false
+            AppTheme.DARK -> true
+            AppTheme.SYSTEM ->
+                (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                    Configuration.UI_MODE_NIGHT_YES
+        }
+        val colour = if (dark) 0xFF121212.toInt() else 0xFFFFFFFF.toInt()
+        rootView.setBackgroundColor(colour)
+        window.decorView.setBackgroundColor(colour)
     }
 
     override fun onStop() {

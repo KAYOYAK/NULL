@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { hasLocalEngine } from './api/local.js'
+import { hasLocalEngine, nativeTheme, setNativeTheme } from './api/local.js'
 import type { TtsVoice } from './api/speech.js'
 import { normalizeLocation, type UserLocation } from './location.js'
 
@@ -87,6 +87,11 @@ const initialLocation = (): UserLocation | null => {
 
 /** 未保存过时跟随系统 */
 const initialThemePreference = (): ThemePreference => {
+  // 本机模式：主题只有一份，来自应用设置，原生界面和这一页读同一个值
+  const shared = nativeTheme()
+  if (shared) {
+    return shared
+  }
   const saved = read(KEYS.themePreference)
   return saved === 'light' || saved === 'dark' ? saved : 'system'
 }
@@ -117,6 +122,8 @@ export const setLocation = (value: UserLocation | null) => {
 }
 
 export const setThemePreference = (themePreference: ThemePreference) => {
+  // 同步给原生界面：模型页和这里不是两套主题
+  setNativeTheme(themePreference)
   write(KEYS.themePreference, themePreference)
   useSettings.setState({ themePreference })
 }

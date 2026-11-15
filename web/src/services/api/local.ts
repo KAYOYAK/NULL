@@ -22,6 +22,11 @@ import type { CreateMessageRequest, MessageParam, MessageStreamEvent } from './t
 type NullLocalBridge = {
   /** 打开原生界面：模型管理、关于这些 chat-demo 做不了的 */
   openNative?: (screen: string) => boolean
+  /** 把一段文字交给系统分享 */
+  share?: (text: string) => boolean
+  /** 主题："system" | "light" | "dark" */
+  theme?: () => string
+  setTheme?: (theme: string) => boolean
   /** 系统的语音识别；返回 ok / voice_requesting / 错误码 */
   startListening?: () => string
   stopListening?: () => void
@@ -178,6 +183,44 @@ export const openNative = (
     return bridge()?.openNative?.(screen) ?? false
   } catch {
     return false
+  }
+}
+
+
+/**
+ * Hands one reply to the system share sheet.
+ *
+ * chat-demo copies; it does not share. Sharing was a native capability, and a
+ * capability that only exists in a screen nobody opens any more is a capability
+ * that has been removed.
+ */
+export const shareText = (text: string): boolean => {
+  if (!text.trim()) {
+    return false
+  }
+  try {
+    return bridge()?.share?.(text) ?? false
+  } catch {
+    return false
+  }
+}
+
+
+/** The app's theme preference, shared with the native screens. */
+export const nativeTheme = (): 'system' | 'light' | 'dark' | null => {
+  try {
+    const value = bridge()?.theme?.()
+    return value === 'light' || value === 'dark' || value === 'system' ? value : null
+  } catch {
+    return null
+  }
+}
+
+export const setNativeTheme = (theme: 'system' | 'light' | 'dark'): void => {
+  try {
+    bridge()?.setTheme?.(theme)
+  } catch {
+    // 主题写不进去只影响记忆，下一次打开仍按系统来
   }
 }
 

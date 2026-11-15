@@ -27,6 +27,7 @@ export const en = {
   sessionHistoryTimelineLabelYesterday: 'Yesterday',
   sessionHistoryTimelineLabel7days: '7 Days',
   sessionHistoryTimelineLabel30days: '30 Days',
+  share: 'Share',
   copy: 'Copy',
   copied: 'Copied',
   copyFailed: 'Copy failed. Please long-press or select the text to copy.',

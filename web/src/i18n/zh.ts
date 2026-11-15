@@ -23,6 +23,7 @@ export const zh = {
   sessionHistoryTimelineLabelYesterday: '昨天',
   sessionHistoryTimelineLabel7days: '7 天内',
   sessionHistoryTimelineLabel30days: '30 天内',
+  share: '分享',
   copy: '复制',
   copied: '已复制',
   copyFailed: '复制失败，请长按或选中文本后复制',

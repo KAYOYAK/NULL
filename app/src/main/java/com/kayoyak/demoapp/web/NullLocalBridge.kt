@@ -28,6 +28,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import android.util.Base64
+import com.kayoyak.demoapp.data.settings.AppTheme
 import java.util.Locale
 import java.util.UUID
 
@@ -56,6 +57,9 @@ class NullLocalBridge(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val jobs = HashMap<String, Job>()
     private val main = Handler(Looper.getMainLooper())
+
+    /** Settings writes are suspending; the page calls them from a click handler. */
+    private val settingsScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** 页面按下麦克风时调用；Activity 注入，负责在缺权限时发起系统授权 */
     var requestMicrophone: (() -> Unit)? = null
@@ -156,6 +160,51 @@ class NullLocalBridge(
         main.post { webView.evaluateJavascript(script, null) }
     }
 
+    /**
+     * Hands a reply to the system share sheet.
+     *
+     * chat-demo copies; sharing a reply was the native chat screen's job, and that
+     * screen is no longer the one in front. The chooser is Android's, so the reply
+     * goes wherever the user picks and through no server of ours.
+     */
+    /**
+     * The theme the app is set to: "system", "light" or "dark".
+     *
+     * One preference, read by both UIs. The page used to keep its own, so a phone
+     * in dark mode showed a dark model manager over a white conversation.
+     */
+    @JavascriptInterface
+    fun theme(): String =
+        container.settingsStore.settings.value.chosenTheme.name.lowercase(Locale.ROOT)
+
+    @JavascriptInterface
+    fun setTheme(theme: String): Boolean {
+        val parsed = AppTheme.entries.firstOrNull { it.name.equals(theme, ignoreCase = true) }
+            ?: return false
+        settingsScope.launch {
+            container.settingsStore.update { it.copy(theme = parsed.name) }
+        }
+        return true
+    }
+
+    @JavascriptInterface
+    fun share(text: String): Boolean {
+        if (text.isBlank()) {
+            return false
+        }
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, text)
+        }
+        return try {
+            context.startActivity(Intent.createChooser(send, null))
+            true
+        } catch (error: Throwable) {
+            Log.w("NullWeb", error.javaClass.name, error)
+            false
+        }
+    }
+
     @JavascriptInterface
     fun pasteImage(): String {
         val clipboard = context.getSystemService(ClipboardManager::class.java)
@@ -230,6 +279,7 @@ class NullLocalBridge(
     /** Stops in-flight turns when the page goes away, so the bridge does not
      * outlive its WebView through an engine callback. */
     fun dispose() {
+        settingsScope.cancel()
         main.post { voice.dispose() }
         main.post { tts?.shutdown() }
         tts = null
