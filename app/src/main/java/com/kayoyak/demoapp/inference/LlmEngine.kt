@@ -419,6 +419,16 @@ interface LlmEngine {
      * The flow is cold: collection starts the generation and cancellation stops
      * it. It never throws — failures arrive as [GenerationEvent.Failed] so a
      * caller cannot accidentally leave the UI spinning.
+     *
+     * [images] are encoded image bytes (JPEG/PNG/WebP) sent with the prompt, in
+     * order, on this turn only. A bundle without a vision encoder cannot see
+     * them; the runtime accepts the message and answers as if the picture were
+     * absent, which is why the caller decides whether the loaded model may be
+     * handed an image at all.
      */
-    fun generate(prompt: String, config: GenerationConfig = GenerationConfig()): Flow<GenerationEvent>
+    fun generate(
+        prompt: String,
+        config: GenerationConfig = GenerationConfig(),
+        images: List<ByteArray> = emptyList(),
+    ): Flow<GenerationEvent>
 }

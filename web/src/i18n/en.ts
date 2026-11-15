@@ -185,6 +185,8 @@ export const en = {
   localTtsInitialising: 'The speech engine is still starting; try again shortly',
   localEmptyPrompt: 'Empty prompt',
   localGenerationFailed: 'On-device generation failed',
+  localImagesOnly: 'Local mode accepts images only: documents need server-side parsing',
+  bad_image: 'That image could not be read; try another one',
   localEngineTitle: 'On-device engine',
   localEngineReady: 'The model runs on this device; nothing leaves it',
   localEngineNotReady: 'Not ready: {state}',

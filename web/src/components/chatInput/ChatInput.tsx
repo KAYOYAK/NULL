@@ -81,8 +81,9 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
     if (files.length === 0 || useChatStore.getState().importingHistory) {
       return
     }
-    if (isLocal) {
-      showToast({ key: 'localOnlyNotice' })
+    if (isLocal && !files.every((file) => file.type.startsWith('image/'))) {
+      // 本机模式只收图片：文档需要服务端版面解析，这台设备上没有等价物
+      showToast({ key: 'localImagesOnly' })
       return
     }
     if (!ensureApiKey()) {

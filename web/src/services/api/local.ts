@@ -1,3 +1,4 @@
+import { readLocalImage, isLocalImageId } from '../localImageStore.js'
 import { translate } from '../../i18n/index.js'
 import type { TranslationKey } from '../../i18n/index.js'
 import type { CreateMessageRequest, MessageParam, MessageStreamEvent } from './types.js'
@@ -109,6 +110,30 @@ const waitWhileLoading = async (signal: AbortSignal, timeoutMs = 20000): Promise
   }
 }
 
+
+/** 本轮用户消息里的图片块：本机模式下它们引用的是内存里的字节，不是 file_id */
+const collectImageBlocks = async (messages: MessageParam[]): Promise<string[]> => {
+  const lastUser = [...messages].reverse().find((message) => message.role === 'user')
+  if (!lastUser || typeof lastUser.content === 'string') {
+    return []
+  }
+  const out: string[] = []
+  for (const block of lastUser.content) {
+    if (block.type !== 'image' || block.source.type !== 'file') {
+      continue
+    }
+    const id = block.source.file_id
+    if (!isLocalImageId(id)) {
+      continue
+    }
+    const data = await readLocalImage(id)
+    if (data) {
+      out.push(data)
+    }
+  }
+  return out
+}
+
 export async function* streamLocalMessage(
   body: CreateMessageRequest,
   signal: AbortSignal
@@ -126,6 +151,7 @@ export async function* streamLocalMessage(
   }
 
   const prompt = turns[lastIndex].text
+  const images = await collectImageBlocks(body.messages)
 
   const queue: MessageStreamEvent[] = []
   let failure: Error | null = null
@@ -230,6 +256,7 @@ export async function* streamLocalMessage(
       system: "",
       history: turns.slice(0, lastIndex),
       prompt,
+      images,
       maxTokens: 1024,
       thinking: body.thinking?.type === 'enabled',
     })

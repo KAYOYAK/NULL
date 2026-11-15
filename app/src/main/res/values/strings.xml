@@ -486,4 +486,6 @@
     <string name="sampling_varied">放得开</string>
     <string name="sampling_varied_hint">措辞更活泼，适合写东西。小模型用这个可能变得不连贯。</string>
     <string name="chat_web_ui">网页界面（本机）</string>
+    <string name="publisher_internvl">上海人工智能实验室</string>
+    <string name="model_internvl3_5_2b">2B 视觉语言模型：除了聊天，还能读图——截图、票据、表格、手写都行。需要先切到这个模型，切换后要重新加载引擎。</string>
 </resources>

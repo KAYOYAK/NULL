@@ -187,6 +187,23 @@ object ModelCatalogue {
      */
     val models: List<ModelDescriptor> = listOf(
         ModelDescriptor(
+            id = "internvl3_5_2b",
+            displayName = "InternVL3.5 2B（可看图）",
+            publisherRes = R.string.publisher_internvl,
+            descriptionRes = R.string.model_internvl3_5_2b,
+            languages = setOf(ModelLanguage.CHINESE, ModelLanguage.ENGLISH),
+            url = "$HF_MIRROR/litert-community/InternVL3_5-2B/resolve/main/model.litertlm",
+            fallbackUrl = "$HF/litert-community/InternVL3_5-2B/resolve/main/model.litertlm",
+            fileName = "InternVL3_5-2B.litertlm",
+            sizeBytes = 1_615_527_936L,
+            sha256 = "1d36c24cd4e8380cf1655ba5d873f36575552e00e4e2a44312b6034a5573a182",
+            license = ModelLicense(
+                spdxId = "Apache-2.0",
+                sourceUrl = "$HF/litert-community/InternVL3_5-2B",
+            ),
+            parametersBillions = 2.0,
+        ),
+        ModelDescriptor(
             id = "qwen3-0.6b-int4",
             displayName = "Qwen3 0.6B 量化版",
             publisherRes = R.string.publisher_qwen,

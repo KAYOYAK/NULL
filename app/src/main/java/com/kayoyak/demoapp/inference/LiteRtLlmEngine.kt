@@ -188,6 +188,13 @@ class LiteRtLlmEngine(private val cacheDir: File) : LlmEngine {
                         EngineConfig(
                             modelPath = model.file.absolutePath,
                             backend = candidate.toLiteRtBackend(),
+                            // A bundle with a vision encoder still needs an executor for
+                            // it, and the runtime refuses an image with "Vision executor
+                            // should not be null" rather than ignoring it. Passing the same
+                            // candidate keeps one fallback story: if this backend cannot
+                            // run, the probe below fails and the next candidate is tried,
+                            // vision included.
+                            visionBackend = candidate.toLiteRtBackend(),
                             cacheDir = cacheDir.absolutePath,
                         )
                     )
@@ -433,7 +440,11 @@ class LiteRtLlmEngine(private val cacheDir: File) : LlmEngine {
         const val FALLBACK_SYSTEM_PROMPT = "你是一个乐于助人的助手。"
     }
 
-    override fun generate(prompt: String, config: GenerationConfig): Flow<GenerationEvent> = flow {
+    override fun generate(
+        prompt: String,
+        config: GenerationConfig,
+        images: List<ByteArray>,
+    ): Flow<GenerationEvent> = flow {
         val forModel = loadedModelId
         generationGate.withLock {
             val active = conversation
@@ -447,8 +458,19 @@ class LiteRtLlmEngine(private val cacheDir: File) : LlmEngine {
             var finished = false
 
             try {
+                // A vision bundle keeps its encoder inside the same file, so the
+                // image travels as a content block on this turn rather than as a
+                // separate model. Text-only bundles accept the same message and
+                // answer without seeing it.
+                val turn = if (images.isEmpty()) {
+                    Message.user(prompt)
+                } else {
+                    Message.user(
+                        Contents.of(images.map { Content.ImageBytes(it) } + Content.Text(prompt)),
+                    )
+                }
                 active.sendMessageAsync(
-                    message = Message.user(prompt),
+                    message = turn,
                     maxOutputToken = config.maxTokens,
                 ).collect { message ->
                     // Channel text first: a thinking model's channel arrives before the

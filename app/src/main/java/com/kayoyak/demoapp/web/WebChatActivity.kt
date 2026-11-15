@@ -1,16 +1,19 @@
 package com.kayoyak.demoapp.web
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Bundle
 import android.view.ViewGroup
 import android.util.Log
 import android.webkit.ConsoleMessage
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewAssetLoader
@@ -28,6 +31,15 @@ import com.kayoyak.demoapp.DemoApplication
 class WebChatActivity : ComponentActivity() {
 
     private var bridge: NullLocalBridge? = null
+    /** 页面正在等一次文件选择；WebView 只给一次回调，用过就清 */
+    private var pendingFileCallback: ValueCallback<Array<Uri>>? = null
+
+    private val pickFile =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            val callback = pendingFileCallback
+            pendingFileCallback = null
+            callback?.onReceiveValue(if (uri != null) arrayOf(uri) else null)
+        }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +70,25 @@ class WebChatActivity : ComponentActivity() {
             override fun onConsoleMessage(message: ConsoleMessage): Boolean {
                 Log.w("NullWeb", "${message.messageLevel()} ${message.message()} @${message.lineNumber()}")
                 return true
+            }
+
+            // 附件按钮在页面里就是一个 <input type=file>；没有这个回调，点它什么也不会发生。
+            // 选完把 URI 交回页面，它自己读字节（本机模式下不进上传队列）。
+            override fun onShowFileChooser(
+                view: WebView,
+                callback: ValueCallback<Array<Uri>>,
+                params: FileChooserParams,
+            ): Boolean {
+                pendingFileCallback?.onReceiveValue(null)
+                pendingFileCallback = callback
+                return try {
+                    pickFile.launch("*/*")
+                    true
+                } catch (t: Throwable) {
+                    pendingFileCallback = null
+                    Log.w("NullWeb", "no activity can pick a file", t)
+                    false
+                }
             }
         }
 

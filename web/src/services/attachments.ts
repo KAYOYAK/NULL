@@ -3,6 +3,8 @@ import type { LinkedMessage, TranslationMessage } from '../i18n/index.js'
 import { uploadFile } from './api/client.js'
 import { classifyApiError, getUploadErrorInfo, isRetryableApiError } from './api/errors.js'
 import type { FilePurpose } from './api/types.js'
+import { hasLocalEngine } from './api/local.js'
+import { registerLocalImage } from './localImageStore.js'
 import { ACCEPT_FILE_EXTS } from './uploadExts.js'
 
 /** 允许上传的扩展名，按扩展名白名单过滤，清单见 uploadExts.ts */
@@ -174,6 +176,15 @@ export const uploadAttachment = (
   const current = pending.get(id)
   if (current) {
     return current.promise
+  }
+  // 本机模式没有 Files API：图片字节留在内存里，发送时由桥取走。
+  // 只有图片走这条路；文档需要服务端版面解析，本机没有等价物。
+  if (hasLocalEngine() && isImage) {
+    const serverId = registerLocalImage(id, blob)
+    setTask(id, { status: 'done', serverId })
+    const local = Promise.resolve(serverId)
+    pending.set(id, { promise: local, controller: new AbortController() })
+    return local
   }
   const controller = new AbortController()
   setTask(id, { status: 'uploading' })

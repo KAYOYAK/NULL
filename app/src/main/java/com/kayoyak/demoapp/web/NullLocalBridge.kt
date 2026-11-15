@@ -172,7 +172,26 @@ class NullLocalBridge(
             val maxTokens = request.optInt("maxTokens", 1024).coerceIn(16, 4096)
             val config = GenerationConfig(maxTokens = maxTokens)
 
-            container.llmEngine.generate(text, config).collect { event ->
+            // Images arrive base64-encoded, already downscaled by the page. Decoding
+            // happens here so the native layer never receives a string it has to
+            // parse, and a malformed frame is reported as a code the page can read.
+            val images = ArrayList<ByteArray>()
+            val encoded = request.optJSONArray("images") ?: JSONArray()
+            for (index in 0 until encoded.length()) {
+                val raw = encoded.optString(index)
+                if (raw.isBlank()) {
+                    continue
+                }
+                val bytes = runCatching { android.util.Base64.decode(raw, android.util.Base64.DEFAULT) }
+                    .getOrNull()
+                if (bytes == null || bytes.isEmpty()) {
+                    emit(id, "error", failure("bad_image"))
+                    return
+                }
+                images += bytes
+            }
+
+            container.llmEngine.generate(text, config, images).collect { event ->
                 when (event) {
                     is GenerationEvent.Token ->
                         if (event.text.isNotEmpty()) {

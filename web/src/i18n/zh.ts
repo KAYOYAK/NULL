@@ -176,6 +176,8 @@ export const zh = {
   localTtsInitialising: '语音引擎还在初始化，稍后再试',
   localEmptyPrompt: '空提问',
   localGenerationFailed: '本机生成失败',
+  localImagesOnly: '本机模式只收图片：文档需要服务端解析',
+  bad_image: '这张图片读不出来，换一张试试',
   localEngineTitle: '本机引擎',
   localEngineReady: '模型在这台设备上运行，不联网',
   localEngineNotReady: '未就绪：{state}',
