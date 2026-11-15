@@ -147,3 +147,13 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* 保留标记：1.1.2 的聊天页会在这条上标出来，只有 tooltip 不够 */
+.keptMarker {
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--dsw-alias-fill-quaternary, rgb(243, 243, 243));
+  color: var(--dsw-alias-text-secondary, rgb(102, 102, 102));
+  font-size: 11px;
+  white-space: nowrap;
+}

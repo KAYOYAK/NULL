@@ -60,6 +60,11 @@ export const sessionAsMarkdown = (session: Session): string => {
     }
     if (message.usage?.output_tokens) {
       facts.push(`${message.usage.output_tokens} tok`)
+      // 速度留在这份导出里：换模型之后，它是唯一能直接比较的数。
+      if (message.elapsedMs) {
+        const perSecond = message.usage.output_tokens / (message.elapsedMs / 1000)
+        facts.push(`${perSecond.toFixed(1)} tok/s`)
+      }
     }
     lines.push('', `## 模型 · ${stamp(message.createdAt)}`, '')
     if (facts.length > 0) {

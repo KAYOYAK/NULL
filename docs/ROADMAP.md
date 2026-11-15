@@ -204,6 +204,56 @@ against the page).
 | F22 | Session rows show how many messages they hold | **not started** | `v1.1.2` audit: `history_message_count` |
 | F23 | Home-screen shortcut for a new conversation | **not started** | `v1.1.2` audit: `shortcut_new_chat_*`. The shortcut targeted `MainActivity`, which is no longer the entry; restoring it means a deep link into the page |
 
+### The 128 strings, one by one
+
+The audit is only as good as its coverage, so this is the ledger: every string
+`v1.1.2` had that this tree does not, grouped by the capability it belonged to, and
+where that capability lives now. 380 strings became 259; the 128 that went are all
+in this table, and 127 of them are named explicitly. A capability is either **kept**
+in the page (chat-demo's implementation), **replaced** by a page feature that does
+the same job, **restored** in this branch because the page had nothing, or
+**recorded** here as having no counterpart, with the reason.
+
+| # | Capability in 1.1.2 | 1.1.2 strings | Where it lives now |
+| --- | --- | --- | --- |
+| L1 | Ask again / regenerate | `chat_ask_again` | page: regenerate action on a reply |
+| L2 | Edit a question and resend | `chat_edit_hint`, `_cancel`, `_resend`, `_send`, `_title` | page: message edit |
+| L3 | Copy a message or a paragraph | `chat_copy`, `chat_copied`, `chat_copied_paragraph` | page: copy action; code blocks copy too |
+| L4 | Read aloud | `chat_speak`, `_stop`, `_unavailable` | page: read-aloud through the bridge to system TTS |
+| L5 | Keep a turn out of the context trim | `chat_keep`, `chat_unkeep`, `chat_kept_marker` | page: keep toggle; the visible 保留 marker was added today |
+| L6 | Context meter and trim notice | `chat_context`, `_full`, `_trimmed` | page: meter from the runtime's count; trim notice added today |
+| L7 | Per-reply elapsed time and speed | `chat_first_token`, `chat_rate`, `chat_seconds` | page: added today, fed by the runtime's own timing |
+| L8 | Delete one reply or a question with its replies | `chat_delete_message`, `chat_delete_exchange` | page: added earlier in this branch |
+| L9 | Find a word inside a conversation | `chat_search_hint`, `_count`, `_none`, `_close` | page: added earlier in this branch |
+| L10 | Share one reply | `chat_share_message`, `chat_share_subject` | page: share action on a reply |
+| L11 | Switch between a reply's versions | `chat_version` | page: branch switcher |
+| L12 | Reasoning display | `chat_thinking`, `chat_reasoned`, `_hide`, `_only` | page: thinking block |
+| L13 | Sidebar and the three native screens | `chat_history`, `chat_models`, `chat_settings`, `chat_more`, `chat_new` | page sidebar; models/settings still native, reached from it |
+| L14 | Composer, send, stop | `chat_send`, `chat_stop`, `chat_stopped`, `chat_message_hint` | page: composer |
+| L15 | Empty state and "no model" states | `chat_empty_title`, `_body`, `chat_no_model_title`, `_body`, `_hint`, `_action`, `chat_needs_model_title`, `chat_loading_model`, `_hint`, `_named` | page: welcome screen and local-mode notices |
+| L16 | Message action menu | `chat_message_actions` | page: per-message actions |
+| L17 | Rename a conversation | `history_rename`, `_title`, `_label`, `_save`, `_cancel` | page: rename in the session menu |
+| L18 | Delete a conversation | `history_delete`, `_title`, `_body`, `history_in_use` | page: delete with confirmation. `history_in_use` has **no counterpart and needs none**: it refused renaming a conversation the native view model had open; the page cancels the pending auto-title instead and leaves the conversation alone |
+| L19 | Search conversations | `history_search_hint`, `history_nothing_found`, `history_clear_search` | page: added earlier in this branch, titles **and** message text |
+| L20 | Pin and archive | `history_pin`, `_unpin`, `_pinned_marker`, `history_archive`, `_unarchive`, `_archived_marker` | page: added earlier in this branch. The group headings carry the state, so the per-row markers had nothing left to say |
+| L21 | Share / export a conversation | `history_share`, `_title`, `history_export_markdown`, `_subject` | page: added earlier in this branch; Markdown gained per-reply speed today |
+| L22 | List, open, read state | `history_title`, `_subtitle`, `_open`, `_reading`, `_empty_body`, `history_unreadable` | page: sidebar and loading state. `history_unreadable` has **no counterpart**: a document that fails to decrypt is absent from the list instead of listed as damaged, because the page never sees the cipher's error |
+| L23 | Message count per row | `history_message_count` | page: added today |
+| L24 | Backup import and export | `backup_explainer`, `_export_all`, `_export_subject`, `_export_too_large`, `_nothing_to_export`, `_import`, `_import_empty_dropped`, `_import_none`, `_import_only_empty`, `_import_partial`, `_import_result`, `_import_too_large`, `_import_too_new`, `_import_unreadable` | page: chat-demo's own import/export, routed through the encrypted store. The native one spoke a different file format and would have been a second format to keep |
+| L25 | Export body labels | `export_exported_at`, `_footer`, `_model`, `_model_note`, `_rate`, `_stopped`, `_tokens_note`, `_you` | page: Markdown export. `export_stopped` has **no counterpart**: the page's stop reason union has no "stopped by the user" value, so the marker cannot be derived without inventing one |
+| L26 | Error messages | `err_backup_import`, `_conversation_open`, `_conversation_save`, `_generation_failed`, `_history_archive`, `_history_delete`, `_history_open`, `_history_pin`, `_history_rename`, `_model_mismatch`, `_new_chat` | page: its own error surfaces and toasts, keyed by the bridge's error codes |
+| L27 | Date grouping | `date_today`, `_yesterday`, `_last_seven`, `_last_thirty`, `_earlier` | page: session groups by day |
+| L28 | Memory confirmation before loading | `models_ram_title`, `_body`, `_proceed`, `_cancel` | native model screen: restored today |
+| L29 | Home-screen shortcut | `shortcut_new_chat_short`, `_long` | native: restored today, carrying a private action into the page |
+| L30 | Copy a code block | `markdown_copy_code` | page: code block copy button |
+
+**Three capabilities are recorded instead of restored**, and the reasons are in the
+table: `history_in_use` (no longer has a state to describe), `history_unreadable`
+(the page never sees a decryption failure, so it cannot name one), and
+`export_stopped` (the page has no value that means "the user stopped this reply").
+None of them is a user-visible loss of an action; each is a sentence the old UI
+could print and this one cannot.
+
 **What the audit deliberately did not restore.** The "connection in use" guard on
 renaming (`history_in_use`) has no counterpart because the page renames through the
 store, which refuses while a reply is streaming. `history_unreadable` had no state

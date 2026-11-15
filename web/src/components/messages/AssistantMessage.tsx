@@ -157,6 +157,9 @@ export const AssistantMessage = memo(function AssistantMessage({
         <div className={styles.bottom}>
           <BranchSwitcher versions={versions} disabled={busy} onSelect={onSelectVersion} />
           <div className={clsx(styles.actions, isLast && styles.alwaysShow)}>
+            {kept ? (
+              <span className={styles.keptMarker}>{t('kept')}</span>
+            ) : null}
             {replyMeta ? <span className={styles.meta}>{replyMeta}</span> : null}
             {copyText ? <CopyButton text={copyText} /> : null}
             {hasLocalEngine() ? (

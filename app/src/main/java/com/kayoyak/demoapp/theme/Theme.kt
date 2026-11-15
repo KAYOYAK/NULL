@@ -1,5 +1,6 @@
 package com.kayoyak.demoapp.theme
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.text.TextStyle
 import com.kayoyak.demoapp.data.settings.AppTheme
@@ -16,6 +17,20 @@ private val LightColorScheme =
     onPrimaryContainer = LightOnSurface,
     secondary = LightOnSurfaceVariant,
     onSecondary = LightBackground,
+    secondaryContainer = LightSurfaceHigh,
+    onSecondaryContainer = LightOnSurface,
+    tertiary = LightOnSurface,
+    onTertiary = LightBackground,
+    tertiaryContainer = LightSurfaceHigh,
+    onTertiaryContainer = LightOnSurface,
+    // M3 tints tonal components with the primary hue. Left at its default it is
+    // purple, which is what made the chips and dialogs look like a different app
+    // even after every surface had been set to grey.
+    surfaceTint = LightBackground,
+    inverseSurface = LightOnSurface,
+    inverseOnSurface = LightBackground,
+    inversePrimary = LightSurfaceVariant,
+    scrim = Color(0xFF000000),
     background = LightBackground,
     onBackground = LightOnSurface,
     surface = LightSurface,
@@ -41,6 +56,17 @@ private val DarkColorScheme =
     onPrimaryContainer = DarkOnSurface,
     secondary = DarkOnSurfaceVariant,
     onSecondary = DarkBackground,
+    secondaryContainer = DarkSurfaceHigh,
+    onSecondaryContainer = DarkOnSurface,
+    tertiary = DarkOnSurface,
+    onTertiary = DarkBackground,
+    tertiaryContainer = DarkSurfaceHigh,
+    onTertiaryContainer = DarkOnSurface,
+    surfaceTint = DarkBackground,
+    inverseSurface = DarkOnSurface,
+    inverseOnSurface = DarkSurface,
+    inversePrimary = DarkSurfaceVariant,
+    scrim = Color(0xFF000000),
     background = DarkBackground,
     onBackground = DarkOnSurface,
     surface = DarkSurface,
