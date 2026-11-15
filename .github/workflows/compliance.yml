@@ -35,6 +35,7 @@ name: Compliance
 #   scripts/check-ui-wiring.ps1
 #   scripts/check-callback-reachability.ps1
 #   scripts/check-unused-strings.ps1
+#   scripts/check-readme.ps1
 #   scripts/mutation-sweep.ps1
 #   scripts/check-model-pins.ps1   (needs the network)
 
@@ -122,6 +123,12 @@ jobs:
       - name: Unused copy gate
         shell: pwsh
         run: ./scripts/check-unused-strings.ps1
+
+      # README 是唯一没人构建的文件，所以它最容易与代码脱节：版本号、截图、
+      # 门禁名字都要对得上。这里查的是能机械核对的那些。
+      - name: README still describes this build
+        shell: pwsh
+        run: ./scripts/check-readme.ps1
 
       # Verifies that DISCLAIMER.md and the trademark and claims document exist
       # and are linked, that every model publisher in the catalogue is credited

@@ -110,6 +110,24 @@ change, say so in the PR rather than force-pushing blindly.
   local configuration and are rejected by the repository's ignore rules.
 - Dependencies under a licence incompatible with [MIT](LICENSE).
 
+## Before a release
+
+Tagging is the one moment where the README is treated as a description of the thing
+being downloaded, so it is also the moment it is most likely to be wrong. Two
+layers:
+
+1. **Mechanical.** `scripts/check-readme.ps1` compares the version table with
+   `gradle/libs.versions.toml`, `app/build.gradle.kts` and the Gradle wrapper, and
+   checks that every screenshot and every gate the README names still exists. The
+   release workflow runs it and refuses to publish when it fails.
+2. **Judgement.** Reread the feature list and the 它能做什么 section against what
+   changed since the last tag, and update it in the release commit — a new capability
+   that is missing from the README, or a removed one that is still listed, is exactly
+   the drift no script can catch.
+
+Screenshots go stale faster than prose: a screenshot of a screen that no longer
+exists reads as a claim about the app, so delete it with the screen.
+
 ## Licence of contributions
 
 By submitting a pull request you agree that your contribution is licensed under

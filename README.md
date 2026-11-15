@@ -64,7 +64,7 @@
 ### 管理界面（Compose，只剩 NULL 独有的部分）
 
 对话与历史都由页面负责，原生这边只保留 chat-demo 做不了的界面：模型管理
-（下载/校验/跑分/删除）、设置（后端、采样、系统提示词、提示词库、应用锁）、
+（下载/校验/跑分与跨模型对比/删除）、设置（后端、采样、系统提示词、提示词库、应用锁）、
 关于（许可证、诊断、擦除）。这三页从页面设置里的三行打开，返回即回到对话。
 
 会话本身不住在这里：页面的会话文档经桥写进 `files/web-history/`，用 `FileCipher`
@@ -88,19 +88,19 @@
 > `Failed to initialize WebGPU environment: INTERNAL: No adapters found`）说的是同一件事。
 > 对话截图里的速度读数是那台模拟器的实测值；真机快得多，这个数字不代表上限。
 >
-> 两张没拍到：**跑分**（点下去约 7 秒后回到空闲，既没有结果对话框也没有失败提示，原因未查明）
-> 和**应用锁的锁屏**（开关打开后重启，界面停在模型加载态，没能验证到锁屏）。
+> 没拍到：**应用锁的锁屏**（开关打开后重启，界面停在模型加载态，没能验证到锁屏）。
+> 跑分现在有结果弹窗、失败会报原因、数字也会存下来做对比；截图仍缺一张。
 
 ## 环境要求
 
 | 工具 | 本项目使用的版本 |
 | --- | --- |
 | JDK | 17（Gradle 工具链） |
-| Android SDK Platform | 36（`compileSdk` / `targetSdk`） |
-| 最低 Android 版本 | 24（`minSdk`） |
-| Gradle | 9.1 |
+| Android SDK Platform | 37.2（`compileSdk` 37.2 / `targetSdk` 37） |
+| 最低 Android 版本 | 26（`minSdk`） |
+| Gradle | 9.1.0 |
 | Android Gradle Plugin | 9.0.1 |
-| Kotlin | 2.3.20 |
+| Kotlin | 2.4.21 |
 
 ## 构建
 
@@ -210,6 +210,7 @@ gradle/libs.versions.toml   依赖版本的唯一来源
 | 打进发布 AAR 里的第三方声明 | `scripts/check-embedded-notices.ps1` |
 | 法律声明与署名 | `scripts/check-legal-docs.ps1` |
 | 文案集中在一处，并使用应用的语言 | `scripts/check-ui-copy.ps1` |
+| README 与代码一致（版本号、截图、门禁名字） | `scripts/check-readme.ps1` |
 | 每个屏幕回调都在代码里接上了 | `scripts/check-ui-wiring.ps1` |
 | 改过词的功能没有留下废弃文案 | `scripts/check-unused-strings.ps1` |
 | 署名准确 | `.github/workflows/compliance.yml` |

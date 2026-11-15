@@ -37,6 +37,14 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      # A release is the moment the README is read as a description of what you are
+      # downloading. Versions, screenshots and gate names are checked mechanically;
+      # whether the prose is still true is the release author's job, and the release
+      # notes should say what changed if it is not.
+      - name: README still describes this build
+        shell: pwsh
+        run: ./scripts/check-readme.ps1
+
       # Signing is optional by design.
       #
       # The `fromJSON` of the version-name value is deliberately not used here;
