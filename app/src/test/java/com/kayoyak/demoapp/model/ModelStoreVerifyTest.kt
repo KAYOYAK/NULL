@@ -1,6 +1,6 @@
 package com.kayoyak.demoapp.model
 
-import com.kayoyak.demoapp.data.chat.Conversation
+import com.kayoyak.demoapp.data.SecureDelete
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

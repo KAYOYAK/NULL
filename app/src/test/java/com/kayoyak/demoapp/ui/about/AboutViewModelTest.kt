@@ -3,12 +3,9 @@ package com.kayoyak.demoapp.ui.about
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
-import com.kayoyak.demoapp.data.chat.ChatMessage
-import com.kayoyak.demoapp.data.chat.Conversation
-import com.kayoyak.demoapp.data.chat.FileChatStore
-import com.kayoyak.demoapp.data.chat.MessageRole
 import com.kayoyak.demoapp.data.settings.FileSettingsStore
 import com.kayoyak.demoapp.data.settings.Settings
+import com.kayoyak.demoapp.data.webhistory.EncryptedHistory
 import com.kayoyak.demoapp.model.ModelCatalogue
 import com.kayoyak.demoapp.model.ModelDownloadCoordinator
 import com.kayoyak.demoapp.model.ModelStore
@@ -44,7 +41,7 @@ private const val AWAIT_TIMEOUT_MS = 15_000L
 class AboutViewModelTest {
 
     private lateinit var root: File
-    private lateinit var chatStore: FileChatStore
+    private lateinit var history: EncryptedHistory
     private lateinit var modelStore: ModelStore
     private lateinit var settingsFile: File
     private lateinit var settingsStore: FileSettingsStore
@@ -56,7 +53,7 @@ class AboutViewModelTest {
     fun setUp() {
         Dispatchers.setMain(Dispatchers.Unconfined)
         root = Files.createTempDirectory("about-test").toFile()
-        chatStore = FileChatStore(File(root, "chats"))
+        history = EncryptedHistory(File(root, "web-history"))
         modelStore = ModelStore(File(root, "models"))
         settingsFile = File(root, "settings.json")
         settingsStore = FileSettingsStore(settingsFile)
@@ -65,7 +62,7 @@ class AboutViewModelTest {
             kotlinx.coroutines.flow.emptyFlow()
         })
         viewModel = AboutViewModel(
-            chatStore = chatStore,
+            history = history,
             modelStore = modelStore,
             coordinator = coordinator,
             settingsStore = settingsStore,
@@ -99,21 +96,10 @@ class AboutViewModelTest {
         root.deleteRecursively()
     }
 
-    private fun conversation(id: String, bytes: Int) = Conversation(
-        id = id,
-        title = "a chat",
-        modelId = "m",
-        createdAt = 1_000,
-        updatedAt = 1_000L + bytes,
-        messages = listOf(
-            ChatMessage(
-                id = "$id-0",
-                role = MessageRole.USER,
-                text = "x".repeat(bytes),
-                createdAt = 1_000,
-            ),
-        ),
-    )
+    /** 会话文档现在是不透明的加密文件；这里只需要内容和大小。 */
+    private fun saveSession(id: String, body: String) {
+        history.write(id, body)
+    }
 
     private suspend fun awaitScanned(): AboutUiState =
         withTimeout(AWAIT_TIMEOUT_MS) { viewModel.state.first { !it.scanning } }
@@ -131,8 +117,8 @@ class AboutViewModelTest {
 
     @Test
     fun `what is held is counted, not guessed`() = runBlocking {
-        runBlocking { chatStore.save(conversation("c1", 500)) }
-        runBlocking { chatStore.save(conversation("c2", 700)) }
+        saveSession("c1", "x".repeat(500))
+        saveSession("c2", "x".repeat(700))
         modelStore.modelFile(ModelCatalogue.models[0]).apply {
             parentFile?.mkdirs()
             writeBytes(ByteArray(1_024))
@@ -150,30 +136,30 @@ class AboutViewModelTest {
 
     @Test
     fun `erasing asks first`() = runBlocking {
-        runBlocking { chatStore.save(conversation("c1", 100)) }
+        saveSession("c1", "x".repeat(100))
         awaitScanned()
 
         viewModel.requestErase()
 
         assertTrue("Nothing is removed until it is confirmed", viewModel.state.value.confirmingErase)
-        assertEquals(1, runBlocking { chatStore.list() }.size)
+        assertEquals(1, history.ids().size)
 
         viewModel.cancelErase()
         assertFalse(viewModel.state.value.confirmingErase)
-        assertEquals("Keep means keep", 1, runBlocking { chatStore.list() }.size)
+        assertEquals("Keep means keep", 1, history.ids().size)
     }
 
     @Test
     fun `erasing removes every conversation and reports it`() = runBlocking {
-        runBlocking { chatStore.save(conversation("c1", 100)) }
-        runBlocking { chatStore.save(conversation("c2", 100)) }
+        saveSession("c1", "x".repeat(100))
+        saveSession("c2", "x".repeat(100))
         awaitScanned()
 
         viewModel.requestErase()
         viewModel.confirmErase()
 
         val state = withTimeout(AWAIT_TIMEOUT_MS) { viewModel.state.first { it.eraseReport != null } }
-        assertEquals("Every conversation is gone", 0, runBlocking { chatStore.list() }.size)
+        assertEquals("Every conversation is gone", 0, history.ids().size)
         assertEquals(0, state.conversationCount)
         assertFalse("And the offer to erase is withdrawn", state.hasAnything)
     }

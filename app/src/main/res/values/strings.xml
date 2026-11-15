@@ -73,8 +73,6 @@
     <string name="chat_reasoned_hide">收起</string>
     <string name="chat_reasoned_only">它想完了，但没给出答案。再问一次，或者换个问法。</string>
     <string name="markdown_copy_code">复制代码</string>
-    <string name="shortcut_new_chat_short">新对话</string>
-    <string name="shortcut_new_chat_long">从空的开始</string>
     <string name="chat_search_hint">在这段对话里找</string>
     <string name="chat_search_close">退出搜索</string>
     <string name="chat_search_count">%1$d / %2$d 条消息</string>

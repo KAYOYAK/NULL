@@ -68,8 +68,6 @@ class MainActivity : ComponentActivity() {
     startKey = startFrom(intent)
 
     // Which of the entry points this launch is, if any.
-    acceptNewChat(intent, container)
-    acceptSharedText(intent, container)
 
     setContent {
       // Read here rather than inside the navigation graph, because these are
@@ -171,8 +169,6 @@ class MainActivity : ComponentActivity() {
     // the background delivers an intent to the running activity rather than
     // creating a new one, and reading only in onCreate would drop it silently.
     val container = (application as DemoApplication).container
-    acceptNewChat(intent, container)
-    acceptSharedText(intent, container)
   }
 
   /**
@@ -183,25 +179,6 @@ class MainActivity : ComponentActivity() {
    * field the sender did not promise would mean acting on whatever happened to be
    * there.
    */
-  /**
-   * The long-press shortcut, which asks for an empty conversation.
-   *
-   * A bare action string this app defines for itself. Nothing else can send it, so
-   * there is no input to validate -- unlike a share, which arrives from outside.
-   */
-  private fun acceptNewChat(intent: Intent?, container: AppContainer) {
-    if (intent?.action != ACTION_NEW_CHAT) return
-    container.newChatRequested.value = true
-  }
-
-  private fun acceptSharedText(intent: Intent?, container: AppContainer) {
-    if (intent?.action != Intent.ACTION_SEND) return
-    if (intent.type?.startsWith("text/") != true) return
-    val text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()?.trim()
-    if (text.isNullOrEmpty()) return
-    container.sharedText.value = text
-  }
-
   companion object {
     /**
      * Defined here and nowhere else.
@@ -210,8 +187,6 @@ class MainActivity : ComponentActivity() {
      * from the app's own shortcut and nothing else should be able to send it. A
      * public action would let any app on the device clear the conversation.
      */
-    const val ACTION_NEW_CHAT = "com.kayoyak.demoapp.NEW_CHAT"
-
     /** Which native screen the front end asked for; absent means the chat screen. */
     const val EXTRA_SCREEN = "screen"
 
@@ -220,8 +195,7 @@ class MainActivity : ComponentActivity() {
         "models" -> Models
         "about" -> About
         "settings" -> Settings
-        "history" -> History
-        else -> Chat
+        else -> Models
       }
   }
 }

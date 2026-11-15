@@ -1,4 +1,4 @@
-package com.kayoyak.demoapp.data.chat
+package com.kayoyak.demoapp.data
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers

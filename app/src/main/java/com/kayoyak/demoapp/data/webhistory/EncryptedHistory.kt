@@ -1,7 +1,7 @@
 package com.kayoyak.demoapp.data.webhistory
 
 import com.kayoyak.demoapp.data.FileCipher
-import com.kayoyak.demoapp.data.chat.SecureDelete
+import com.kayoyak.demoapp.data.SecureDelete
 import java.io.File
 
 /**
@@ -25,6 +25,12 @@ class EncryptedHistory(private val directory: File) {
             ?.mapNotNull { it.name.removeSuffix(SUFFIX).takeIf(::isSafeId) }
             ?.sorted()
             ?: emptyList()
+
+    /** Bytes these documents occupy, for the About screen's storage figures. */
+    fun totalBytes(): Long =
+        directory.listFiles { file -> file.isFile && file.name.endsWith(SUFFIX) }
+            ?.sumOf { it.length() }
+            ?: 0L
 
     /** The stored document, or null when there is none or it cannot be read. */
     fun read(id: String): String? {

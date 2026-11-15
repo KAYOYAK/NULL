@@ -7,9 +7,7 @@ import androidx.core.net.toUri
 import com.kayoyak.demoapp.diagnostics.CrashLog
 import com.kayoyak.demoapp.diagnostics.Speech
 import android.content.Context
-import com.kayoyak.demoapp.data.chat.ChatStore
 import com.kayoyak.demoapp.data.webhistory.EncryptedHistory
-import com.kayoyak.demoapp.data.chat.FileChatStore
 import com.kayoyak.demoapp.data.settings.FileSettingsStore
 import com.kayoyak.demoapp.data.settings.SettingsStore
 import com.kayoyak.demoapp.inference.LiteRtLlmEngine
@@ -168,7 +166,6 @@ class AppContainer(context: Context) {
     val downloadCoordinator: ModelDownloadCoordinator =
         ModelDownloadCoordinator(applicationScope, modelStore, modelDownloader::download)
 
-    /** Conversation history. App-private: a chat log is personal data. */
     /**
      * The conversation the history screen asked the chat screen to open.
      *
@@ -242,8 +239,6 @@ class AppContainer(context: Context) {
         context.contentResolver.openInputStream(uri.toUri())
             ?: throw java.io.IOException("That file could not be opened")
     }
-
-    val chatStore: ChatStore = FileChatStore(File(context.filesDir, "chats"))
 
     /** 网页前端的会话历史，落在同一个加密工具上 */
     val webHistory: EncryptedHistory =

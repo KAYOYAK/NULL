@@ -6,10 +6,10 @@ import com.kayoyak.demoapp.ui.UiMessage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kayoyak.demoapp.data.chat.ChatStore
-import com.kayoyak.demoapp.data.chat.SecureDelete
+import com.kayoyak.demoapp.data.SecureDelete
 import com.kayoyak.demoapp.data.settings.Settings
 import com.kayoyak.demoapp.data.settings.SettingsStore
+import com.kayoyak.demoapp.data.webhistory.EncryptedHistory
 import com.kayoyak.demoapp.model.ModelDownloadCoordinator
 import com.kayoyak.demoapp.model.ModelCatalogue
 import com.kayoyak.demoapp.model.ModelStore
@@ -73,7 +73,7 @@ data class AboutUiState(
  * and offers to remove all of it.
  */
 class AboutViewModel(
-    private val chatStore: ChatStore,
+    private val history: EncryptedHistory,
     private val modelStore: ModelStore,
     private val coordinator: ModelDownloadCoordinator,
     private val settingsStore: SettingsStore,
@@ -120,9 +120,9 @@ class AboutViewModel(
         viewModelScope.launch {
             val disk = withContext(Dispatchers.IO) {
                 DiskRead(
-                    chats = chatStore.bytesUsed(),
+                    chats = history.totalBytes(),
                     models = modelStore.totalBytesUsed(),
-                    conversations = chatStore.list().size,
+                    conversations = history.ids().size,
                     installed = modelStore.installedModels(registry.models.value).size,
                 )
             }
@@ -178,7 +178,8 @@ class AboutViewModel(
         viewModelScope.launch {
             val failure = withContext(Dispatchers.IO) {
                 runCatching {
-                    chatStore.list().forEach { chatStore.delete(it.id) }
+                    // 会话现在住在加密存储里，擦除必须包括它，否则"擦掉一切"是假的。
+                    history.ids().forEach { history.delete(it) }
 
                     // The engine first. It holds the model's file open and keeps
                     // several gigabytes resident; deleting the file underneath it
