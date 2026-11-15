@@ -2,6 +2,7 @@ package com.kayoyak.demoapp.web
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.ViewGroup
 import android.util.Log
 import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
@@ -64,13 +65,22 @@ class WebChatActivity : ComponentActivity() {
         bridge = localBridge
         webView.addJavascriptInterface(localBridge, "NullLocal")
 
-        // targetSdk 37 enforces edge-to-edge, so without this the keyboard covers the
-        // composer at the bottom of the page. Reserving the bars and the IME shrinks the
-        // view, which shrinks the page's own 100vh, which moves the composer up.
+        // targetSdk 37 enforces edge-to-edge. Padding alone is not enough: the page
+        // sizes itself from its own viewport (--app-viewport-height, falling back to
+        // 100dvh), so the WebView itself has to get shorter or the composer stays
+        // behind the keyboard. A bottom margin shrinks the view, which shrinks the
+        // viewport, which is what moves the composer up; the top inset stays padding
+        // because the content should start below the status bar.
         ViewCompat.setOnApplyWindowInsetsListener(webView) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
-            view.setPadding(0, bars.top, 0, maxOf(bars.bottom, ime.bottom))
+            val params = view.layoutParams as? ViewGroup.MarginLayoutParams
+            val bottom = maxOf(bars.bottom, ime.bottom)
+            if (params != null && params.bottomMargin != bottom) {
+                params.bottomMargin = bottom
+                view.layoutParams = params
+            }
+            view.setPadding(0, bars.top, 0, 0)
             insets
         }
 

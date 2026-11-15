@@ -87,6 +87,28 @@ export const toLocalTurns = (messages: MessageParam[]) =>
     .map((message) => ({ fromUser: message.role === 'user', text: textOf(message.content) }))
     .filter((turn) => turn.text.trim() !== '')
 
+
+/** 会话标题：第一行、压掉多余空白、最长 24 个字符，超出以省略号收尾 */
+const titleFromPrompt = (prompt: string): string => {
+  const line = prompt.trim().split('\n').find((part) => part.trim() !== '') ?? ''
+  const flat = line.replace(/\s+/g, ' ').trim()
+  return flat.length > 24 ? `${flat.slice(0, 24)}…` : flat
+}
+
+
+/**
+ * 打开网页界面时模型可能还在加载（Compose 那边一进来就开始加载了）。
+ * 等它一小会儿再发，比让用户看到「还没有加载模型」更接近事实——那时它确实正在加载。
+ */
+const waitWhileLoading = async (signal: AbortSignal, timeoutMs = 20000): Promise<void> => {
+  const deadline = Date.now() + timeoutMs
+  // `idle` counts too: the Compose screen starts loading the model when the app
+  // opens, and a page opened in the same breath can arrive before that begins.
+  while (!signal.aborted && localEngineState() !== 'ready' && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 250))
+  }
+}
+
 export async function* streamLocalMessage(
   body: CreateMessageRequest,
   signal: AbortSignal
@@ -96,11 +118,14 @@ export async function* streamLocalMessage(
     throw new Error('本机引擎不可用')
   }
 
+  const wantsTitle = body.title?.enabled === true
   const turns = toLocalTurns(body.messages)
   const lastIndex = turns.length - 1
   if (lastIndex < 0 || !turns[lastIndex].fromUser) {
     throw new Error('没有可发送的问题')
   }
+
+  const prompt = turns[lastIndex].text
 
   const queue: MessageStreamEvent[] = []
   let failure: Error | null = null
@@ -145,21 +170,26 @@ export async function* streamLocalMessage(
           }
           break
         }
-        case 'done':
+        case 'done': {
           if (textOpen) {
             queue.push({ type: 'content_block_stop', index: 0 })
             textOpen = false
           }
+          // The cloud used to name the session. Locally the only name available is
+          // the question, which is the same thing a reader would have written.
+          const title = wantsTitle ? titleFromPrompt(prompt) : ''
           queue.push({
             type: 'message_delta',
             delta: {
               stop_reason: data.stopReason === 'max_tokens' ? 'max_tokens' : 'end_turn',
               stop_sequence: null,
+              ...(title ? { title } : {}),
             },
           })
           queue.push({ type: 'message_stop' })
           finished = true
           break
+        }
         case 'error': {
           const detail = typeof data.detail === 'string' ? data.detail : ''
           const text = localErrorText(String(data.message ?? ''))
@@ -173,6 +203,11 @@ export async function* streamLocalMessage(
     } finally {
       notify()
     }
+  }
+
+  await waitWhileLoading(signal)
+  if (signal.aborted) {
+    return
   }
 
   const globals = globalThis as { __nullLocalEmit?: Emit }
@@ -194,7 +229,7 @@ export async function* streamLocalMessage(
       // 这里传空，避免模型自报成另一个产品。
       system: "",
       history: turns.slice(0, lastIndex),
-      prompt: turns[lastIndex].text,
+      prompt,
       maxTokens: 1024,
       thinking: body.thinking?.type === 'enabled',
     })
