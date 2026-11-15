@@ -47,6 +47,8 @@ export const zh = {
   keep: '保留',
   kept: '已保留',
   share: '分享',
+  contextTrimmed: '最早的 {count} 条已不在上下文里',
+  sessionMessageCount: '{count} 条',
   replyMeta: '{tokens} tok · {seconds} 秒 · {rate} tok/s',
   copy: '复制',
   copied: '已复制',

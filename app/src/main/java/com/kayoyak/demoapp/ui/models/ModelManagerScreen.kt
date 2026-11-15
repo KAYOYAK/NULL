@@ -79,6 +79,10 @@ fun ModelManagerScreen(
         onDeleteRequested = viewModel::requestDelete,
         onVerify = viewModel::verifyModel,
         onBenchmark = viewModel::runBenchmark,
+        onLoad = viewModel::loadModel,
+        onConfirmRamWarning = viewModel::confirmRamWarning,
+        onDismissRamWarning = viewModel::dismissRamWarning,
+        onDismissLoadError = viewModel::dismissLoadError,
         onSamplingChosen = viewModel::chooseSamplingProfile,
         onDeleteConfirmed = viewModel::confirmDelete,
         onDeleteCancelled = viewModel::cancelDelete,
@@ -110,6 +114,10 @@ internal fun ModelManagerContent(
     modifier: Modifier = Modifier,
     onVerify: (ModelDescriptor) -> Unit = {},
     onBenchmark: (ModelDescriptor, String) -> Unit = { _, _ -> },
+    onLoad: (ModelDescriptor) -> Unit = {},
+    onConfirmRamWarning: () -> Unit = {},
+    onDismissRamWarning: () -> Unit = {},
+    onDismissLoadError: () -> Unit = {},
     /** The sampling profile the user picked for a model. */
     onSamplingChosen: (String, SamplingProfile) -> Unit = { _, _ -> },
     /** The prompt every model is asked, so the numbers compare. */
@@ -142,6 +150,18 @@ internal fun ModelManagerContent(
         // A delete that did not happen. Shown above the list rather than on the
         // row, because the row's state is the fact and the message is about the
         // attempt.
+        state.loadError?.let { error ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                UiMessageText(message = error, modifier = Modifier.weight(1f))
+                TextButton(onClick = onDismissLoadError) {
+                    Text(stringResource(R.string.settings_dismiss))
+                }
+            }
+        }
+
         state.benchmarkError?.let { error ->
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
@@ -211,6 +231,9 @@ internal fun ModelManagerContent(
                     onCancelDownload = onCancelDownload,
                     onDismissMessage = onDismissMessage,
                     onDeleteRequested = { onDeleteRequested(row.descriptor) },
+                    loaded = state.loadedModelId == row.descriptor.id,
+                    loading = state.loadingModelId == row.descriptor.id,
+                    onLoad = { onLoad(row.descriptor) },
                     onVerify = { onVerify(row.descriptor) },
                     onBenchmark = { onBenchmark(row.descriptor, benchmarkPrompt) },
                     onSamplingChosen = { profile -> onSamplingChosen(row.descriptor.id, profile) },
@@ -227,6 +250,33 @@ internal fun ModelManagerContent(
                 ) { Text(stringResource(R.string.models_about)) }
             }
         }
+    }
+
+    state.ramWarning?.let { pending ->
+        AlertDialog(
+            onDismissRequest = onDismissRamWarning,
+            title = { Text(stringResource(R.string.models_ram_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.models_ram_body,
+                        pending.descriptor.displayName,
+                        formatBytes(pending.requiredBytes),
+                        formatBytes(pending.budgetBytes),
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onConfirmRamWarning) {
+                    Text(stringResource(R.string.models_ram_proceed))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissRamWarning) {
+                    Text(stringResource(R.string.models_ram_cancel))
+                }
+            },
+        )
     }
 
     state.pendingDelete?.let { pending ->
@@ -471,6 +521,11 @@ private fun ModelCard(
     onCancelDownload: () -> Unit,
     onDismissMessage: () -> Unit,
     onDeleteRequested: () -> Unit,
+    /** 这个模型就是当前在回答的那个。 */
+    loaded: Boolean,
+    /** 正在加载这个模型。 */
+    loading: Boolean,
+    onLoad: () -> Unit,
     onVerify: () -> Unit,
     onBenchmark: () -> Unit,
     onSamplingChosen: (SamplingProfile) -> Unit,
@@ -559,7 +614,18 @@ private fun ModelCard(
             }
 
             Spacer(Modifier.height(12.dp))
-            StatusAndActions(row.status, row, enabled, onDownload, onCancelDownload, onDismissMessage, onDeleteRequested)
+            StatusAndActions(
+                status = row.status,
+                row = row,
+                enabled = enabled,
+                onDownload = onDownload,
+                onCancelDownload = onCancelDownload,
+                onDismissMessage = onDismissMessage,
+                onDeleteRequested = onDeleteRequested,
+                loaded = loaded,
+                loading = loading,
+                onLoad = onLoad,
+            )
 
             // What can be done with a model that is already here.
             //
@@ -617,6 +683,9 @@ private fun StatusAndActions(
     onCancelDownload: () -> Unit,
     onDismissMessage: () -> Unit,
     onDeleteRequested: () -> Unit,
+    loaded: Boolean,
+    loading: Boolean,
+    onLoad: () -> Unit,
 ) {
     when (status) {
         ModelStatus.NotDownloaded -> Button(onClick = onDownload, enabled = enabled) {
@@ -673,6 +742,20 @@ private fun StatusAndActions(
                 color = MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.weight(1f))
+            // 1.1.2 能在这里换模型；页面只有设置，不能选，于是"加载哪个模型"一度没有入口。
+            when {
+                loading -> Text(
+                    stringResource(R.string.models_loading),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                loaded -> Text(
+                    stringResource(R.string.models_in_use),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                else -> TextButton(onClick = onLoad) { Text(stringResource(R.string.models_load)) }
+            }
             TextButton(onClick = onDeleteRequested) { Text(stringResource(R.string.models_delete)) }
         }
 

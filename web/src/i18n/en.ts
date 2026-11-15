@@ -51,6 +51,8 @@ export const en = {
   keep: 'Keep',
   kept: 'Kept',
   share: 'Share',
+  contextTrimmed: 'Oldest {count} turn(s) are out of context',
+  sessionMessageCount: '{count} msgs',
   replyMeta: '{tokens} tok · {seconds}s · {rate} tok/s',
   copy: 'Copy',
   copied: 'Copied',

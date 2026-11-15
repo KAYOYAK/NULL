@@ -12,7 +12,7 @@ import {
 } from '../base/icons.js'
 import { setSearch, setThinking, useSettings } from '../../services/settings.js'
 import { useIsMobile } from '../../app/viewport.js'
-import { sendMessage, stopReply, useChatStore } from '../../services/chat/store.js'
+import { newChat, sendMessage, stopReply, useChatStore } from '../../services/chat/store.js'
 import {
   addDraftFiles,
   EMPTY_DRAFT,
@@ -50,12 +50,15 @@ const shareTargets = new Map<string | null, (text: string) => void>()
 type ShareWindow = Window & {
   __nullShareHookInstalled?: boolean
   __nullSharedText?: (text: string) => void
+  /** 桌面快捷方式的「新对话」 */
+  __nullNewChat?: () => void
 }
 
 if (typeof window !== 'undefined') {
   const host = window as ShareWindow
   if (!host.__nullShareHookInstalled) {
     host.__nullShareHookInstalled = true
+    host.__nullNewChat = () => newChat()
     host.__nullSharedText = (text: string) => {
       for (const setText of shareTargets.values()) {
         setText(text)

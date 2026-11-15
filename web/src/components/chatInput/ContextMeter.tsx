@@ -13,6 +13,7 @@ export const ContextMeter = () => {
   const t = useTranslate()
   const used = useContextMeter((state) => state.used)
   const window = useContextMeter((state) => state.window)
+  const dropped = useContextMeter((state) => state.dropped)
   if (used === null || window === null || window <= 0) {
     return null
   }
@@ -26,6 +27,9 @@ export const ContextMeter = () => {
         />
       </div>
       <span className={styles.label}>{t('contextMeter', { used, window })}</span>
+      {dropped > 0 ? (
+        <span className={styles.label}>{t('contextTrimmed', { count: dropped })}</span>
+      ) : null}
     </div>
   )
 }

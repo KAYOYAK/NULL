@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    桌面长按的「新对话」。
+
+    1.1.2 的快捷方式指向 MainActivity，换前端之后那个界面不再是入口，快捷方式
+    也就跟着失效了。它现在指向网页前端，并带一个本应用私有的 action。
+
+    A private action string rather than a system one: this request comes from the
+    app's own shortcut and nothing else should be able to send it.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="new_chat"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_new_chat_short"
+        android:shortcutLongLabel="@string/shortcut_new_chat_long">
+        <intent
+            android:action="com.kayoyak.demoapp.web.NEW_CHAT"
+            android:targetPackage="com.kayoyak.demoapp"
+            android:targetClass="com.kayoyak.demoapp.web.WebChatActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>

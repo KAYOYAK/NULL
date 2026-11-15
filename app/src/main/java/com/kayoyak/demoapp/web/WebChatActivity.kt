@@ -53,6 +53,11 @@ import com.kayoyak.demoapp.DemoApplication
  */
 class WebChatActivity : ComponentActivity() {
 
+    private companion object {
+        /** 本应用私有：只有自己的快捷方式会发它 */
+        const val ACTION_NEW_CHAT = "com.kayoyak.demoapp.web.NEW_CHAT"
+    }
+
     private var bridge: NullLocalBridge? = null
 
     /**
@@ -66,6 +71,9 @@ class WebChatActivity : ComponentActivity() {
     private var unlockedAt by mutableStateOf<Long?>(null)
     private lateinit var lockOverlay: ComposeView
     private lateinit var rootView: FrameLayout
+
+    /** 桌面快捷方式送来的「新对话」请求 */
+    private var pendingNewChat = false
 
     /** Text shared in from another app, held until the page can take it. */
     private var pendingShare: String? = null
@@ -114,6 +122,10 @@ class WebChatActivity : ComponentActivity() {
             override fun onPageFinished(view: WebView, url: String?) {
                 super.onPageFinished(view, url)
                 pageLoaded = true
+                if (pendingNewChat) {
+                    pendingNewChat = false
+                    bridge?.pushNewChat()
+                }
                 pendingShare?.let { text ->
                     pendingShare = null
                     bridge?.pushSharedText(text)
@@ -207,6 +219,7 @@ class WebChatActivity : ComponentActivity() {
         applyWindowBackground()
         syncLock()
         takeShare(intent)
+        takeNewChat(intent)
         webView.loadUrl("https://appassets.androidplatform.net/assets/web/index.html")
     }
 
@@ -229,6 +242,16 @@ class WebChatActivity : ComponentActivity() {
     }
 
     /** Text shared in from another app, delivered once the page can accept it. */
+    private fun takeNewChat(intent: Intent?) {
+        if (intent?.action == ACTION_NEW_CHAT) {
+            if (pageLoaded) {
+                bridge?.pushNewChat()
+            } else {
+                pendingNewChat = true
+            }
+        }
+    }
+
     private fun takeShare(intent: Intent?) {
         if (intent?.action != Intent.ACTION_SEND) {
             return
@@ -251,6 +274,7 @@ class WebChatActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         takeShare(intent)
+        takeNewChat(intent)
     }
 
     override fun onStart() {

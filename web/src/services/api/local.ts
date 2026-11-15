@@ -1,5 +1,11 @@
 import { readLocalImage, isLocalImageId } from '../localImageStore.js'
-import { estimateTokens, setContextMeter, trimTurns, useKept } from '../context.js'
+import {
+  estimateTokens,
+  setContextDropped,
+  setContextMeter,
+  trimTurns,
+  useKept,
+} from '../context.js'
 import { translate } from '../../i18n/index.js'
 import type { TranslationKey } from '../../i18n/index.js'
 import type { CreateMessageRequest, MessageParam, MessageStreamEvent } from './types.js'
@@ -466,7 +472,13 @@ export async function* streamLocalMessage(
         // 先把窗口问出来，再决定交多少历史回去。留出回答本身的位置。
         const window = readWindow()
         const budget = window === null ? 0 : Math.max(0, Math.floor(window * 0.6))
-        const { turns: trimmed } = trimTurns(turns.slice(0, lastIndex), budget, useKept.getState().kept)
+        const { turns: trimmed, dropped } = trimTurns(
+          turns.slice(0, lastIndex),
+          budget,
+          useKept.getState().kept
+        )
+        // 裁掉了多少要让学生看得见：模型突然"忘了前面"，用户需要一个解释。
+        setContextDropped(dropped)
         return trimmed
       })(),
       prompt,

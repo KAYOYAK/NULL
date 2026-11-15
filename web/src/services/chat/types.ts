@@ -126,7 +126,10 @@ export type Session = {
 export type SessionSummary = Pick<
   Session,
   'id' | 'title' | 'createdAt' | 'updatedAt' | 'pinnedAt' | 'archivedAt'
->
+> & {
+  /** 可见消息条数；1.1.2 的历史列表每行都显示它 */
+  messageCount?: number
+}
 
 /** 显式提取字段，避免将完整会话的消息带进列表。 */
 export const toSessionSummary = (session: SessionSummary): SessionSummary => ({

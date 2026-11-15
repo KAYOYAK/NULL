@@ -156,6 +156,12 @@ class NullLocalBridge(
         }
     }
 
+    /** 桌面快捷方式要求开一段新对话。 */
+    fun pushNewChat() {
+        val script = "(function(){var n=0;(function go(){if(window.__nullNewChat){window.__nullNewChat();}else if(n++<40){setTimeout(go,100);}})();})()"
+        main.post { webView.evaluateJavascript(script, null) }
+    }
+
     /**
      * Hands text from another app to the page's composer.
      *

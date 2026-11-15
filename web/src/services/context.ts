@@ -11,14 +11,21 @@ import { create } from 'zustand'
 type Meter = {
   used: number | null
   window: number | null
+  /** 最近一轮有多少条被裁掉；0 表示没裁 */
+  dropped: number
 }
 
-export const useContextMeter = create<Meter>(() => ({ used: null, window: null }))
+export const useContextMeter = create<Meter>(() => ({ used: null, window: null, dropped: 0 }))
 
 export const setContextMeter = (used: number | null, window: number | null) => {
   useContextMeter.setState((state) =>
-    state.used === used && state.window === window ? state : { used, window }
+    state.used === used && state.window === window ? state : { ...state, used, window }
   )
+}
+
+/** 裁掉了几条：模型突然"忘了前面"，用户需要一个解释。 */
+export const setContextDropped = (dropped: number) => {
+  useContextMeter.setState((state) => (state.dropped === dropped ? state : { ...state, dropped }))
 }
 
 const KEPT_KEY = 'null:kept-messages'

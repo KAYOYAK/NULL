@@ -1,5 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import { toSessionSummary, type Session, type SessionSummary } from './types.js'
+import { getVisibleMessages } from './branches.js'
 import {
   hasLocalEngine,
   historyDelete,
@@ -152,7 +153,10 @@ export const loadSessionSummaries = async (): Promise<SessionSummary[]> => {
         }
       })
       .filter((session): session is Session => session !== null)
-      .map((session) => toSessionSummary(session))
+      .map((session) => ({
+        ...toSessionSummary(session),
+        messageCount: getVisibleMessages(session).length,
+      }))
       .sort((a, b) => b.updatedAt - a.updatedAt)
   }
   return (await (await getDB()).getAll('sessionSummaries')).map(toSessionSummary)

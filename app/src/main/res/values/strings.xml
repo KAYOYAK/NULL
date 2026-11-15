@@ -364,4 +364,14 @@
     <string name="models_benchmark_compare_row">%1$s · 解码 %2$s tok/s · 首 token %3$s ms</string>
     <string name="models_benchmark_unknown">未知</string>
     <string name="models_benchmark_failed">跑分没有跑完：%1$s</string>
+    <string name="models_load">加载</string>
+    <string name="models_in_use">使用中</string>
+    <string name="models_loading">正在加载…</string>
+    <string name="models_load_failed">加载失败：%1$s</string>
+    <string name="models_ram_title">可能装不下</string>
+    <string name="models_ram_body">「%1$s」运行大约需要 %2$s 内存，这台设备给模型的上限是 %3$s。仍然可以加载，但可能在开始回答时被系统结束。</string>
+    <string name="models_ram_proceed">仍然加载</string>
+    <string name="models_ram_cancel">取消</string>
+    <string name="shortcut_new_chat_short">新对话</string>
+    <string name="shortcut_new_chat_long">从空的开始</string>
 </resources>

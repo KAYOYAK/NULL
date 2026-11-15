@@ -71,6 +71,9 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
 
             <!-- 别的应用把文字递过来：落进页面输入框，不直接发出去 -->
             <intent-filter>

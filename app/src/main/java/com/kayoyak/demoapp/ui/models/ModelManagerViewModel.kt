@@ -29,6 +29,7 @@ import com.kayoyak.demoapp.model.ModelRegistry
 import com.kayoyak.demoapp.model.ModelDescriptor
 import com.kayoyak.demoapp.model.ModelDownloadCoordinator
 import com.kayoyak.demoapp.model.DeviceMemory
+import com.kayoyak.demoapp.model.ModelMemory
 import com.kayoyak.demoapp.data.models.BenchmarkLog
 import com.kayoyak.demoapp.data.models.BenchmarkRecord
 import com.kayoyak.demoapp.model.ModelStore
@@ -100,6 +101,10 @@ class ModelManagerViewModel(
     /** 跑分失败的原因；成功时清空。 */
     private val benchmarkError = MutableStateFlow<UiMessage?>(null)
 
+    private val loadingModelId = MutableStateFlow<String?>(null)
+    private val ramWarning = MutableStateFlow<PendingRamWarning?>(null)
+    private val loadError = MutableStateFlow<UiMessage?>(null)
+
     /**
      * A model the user picked that this device may not have room for.
      *
@@ -139,6 +144,79 @@ class ModelManagerViewModel(
             }
             verifying.value = null
             verification.value = ModelVerification(descriptor.displayName, outcome)
+        }
+    }
+
+    /**
+     * Loads a model, asking first when the device may not have room.
+     *
+     * Loading is what makes a model the one answering, and before this existed
+     * nothing could change that after the process started: `startEngineOnce` picks
+     * the first installed model and no screen could pick another. That is why a
+     * device with a vision model installed answered every question with it.
+     *
+     * The question is asked rather than refused: the memory figure is an estimate,
+     * and someone who has just closed everything else knows more about the moment
+     * than this does.
+     */
+    fun loadModel(descriptor: ModelDescriptor) {
+        val engine = engine ?: return
+        if (loadingModelId.value != null) return
+        if ((engine.state.value as? EngineState.Ready)?.modelId == descriptor.id) return
+
+        val verdict = if (deviceMemory.total > 0L) deviceMemory.judge(descriptor.sizeBytes) else null
+        if (verdict is ModelMemory.Verdict.TooBig) {
+            ramWarning.value = PendingRamWarning(
+                descriptor = descriptor,
+                requiredBytes = verdict.requiredBytes,
+                budgetBytes = verdict.budgetBytes,
+            )
+            return
+        }
+        startLoad(descriptor)
+    }
+
+    /** The user said to go ahead anyway. */
+    fun confirmRamWarning() {
+        val pending = ramWarning.value ?: return
+        ramWarning.value = null
+        startLoad(pending.descriptor)
+    }
+
+    fun dismissRamWarning() {
+        ramWarning.value = null
+    }
+
+    fun dismissLoadError() {
+        loadError.value = null
+    }
+
+    private fun startLoad(descriptor: ModelDescriptor) {
+        val engine = engine ?: return
+        viewModelScope.launch {
+            loadingModelId.value = descriptor.id
+            loadError.value = null
+            val settings = settingsStore?.settings?.value
+            val result = runCatching {
+                engine.load(
+                    model = LocalModel(
+                        id = descriptor.id,
+                        displayName = descriptor.displayName,
+                        file = store.modelFile(descriptor),
+                    ),
+                    requested = settings?.let { inferenceBackendNamed(it.backend) }
+                        ?: InferenceBackend.AUTO,
+                    systemPrompt = settings?.effectiveSystemPrompt ?: "",
+                    sampling = settings?.samplingFor(descriptor.id) ?: GenerationConfig(),
+                )
+            }.getOrElse { Result.failure(it) }
+            loadingModelId.value = null
+            result.onFailure { error ->
+                loadError.value = UiMessage(
+                    R.string.models_load_failed,
+                    error.message?.take(160) ?: error.javaClass.simpleName,
+                )
+            }
         }
     }
 
@@ -333,6 +411,9 @@ class ModelManagerViewModel(
         /** 每个模型最近一次跑分，用来做跨模型对比。 */
         val benchmarks: List<com.kayoyak.demoapp.data.models.BenchmarkRecord> = emptyList(),
         val benchmarkError: UiMessage? = null,
+        val loadingModelId: String? = null,
+        val ramWarning: PendingRamWarning? = null,
+        val loadError: UiMessage? = null,
     )
 
     private data class ToolingCore(
@@ -342,14 +423,38 @@ class ModelManagerViewModel(
         val benchmark: ModelBenchmark?,
     )
 
+    private data class ToolingTasking(
+        val core: ToolingCore,
+        val loadingModelId: String?,
+        val ramWarning: PendingRamWarning?,
+        val loadError: UiMessage?,
+    )
+
     private val tooling: Flow<Tooling> = combine(
-        combine(verifying, verification, benchmarking, benchmark) { checking, outcome, running, measured ->
-            ToolingCore(checking, outcome, running, measured)
+        combine(
+            combine(verifying, verification, benchmarking, benchmark) { checking, outcome, running, measured ->
+                ToolingCore(checking, outcome, running, measured)
+            },
+            loadingModelId,
+            ramWarning,
+            loadError,
+        ) { core, loading, warning, failure ->
+            ToolingTasking(core, loading, warning, failure)
         },
         benchmarkLog?.records ?: MutableStateFlow(emptyList()),
         benchmarkError,
-    ) { core, measuredHistory, failure ->
-        Tooling(core.verifying, core.verification, core.benchmarking, core.benchmark, measuredHistory, failure)
+    ) { tasking, measuredHistory, benchmarkFailure ->
+        Tooling(
+            tasking.core.verifying,
+            tasking.core.verification,
+            tasking.core.benchmarking,
+            tasking.core.benchmark,
+            measuredHistory,
+            benchmarkFailure,
+            tasking.loadingModelId,
+            tasking.ramWarning,
+            tasking.loadError,
+        )
     }
 
     private val compute: Flow<Compute> = combine(
@@ -773,6 +878,10 @@ class ModelManagerViewModel(
             benchmark = tooling.benchmark,
             benchmarks = tooling.benchmarks,
             benchmarkError = tooling.benchmarkError,
+            loadingModelId = tooling.loadingModelId,
+            ramWarning = tooling.ramWarning,
+            loadError = tooling.loadError,
+            loadedModelId = inputs.compute.loadedModelId,
             verification = tooling.verification,
             pendingDelete = inputs.pending,
             deleteError = inputs.notices.deleteError,

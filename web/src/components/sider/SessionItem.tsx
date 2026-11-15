@@ -63,7 +63,14 @@ export const SessionItem = memo(function SessionItem({
         closeMobileSider()
       }}
     >
-      <div className={styles.title}>{displayTitle}</div>
+      <div className={styles.title}>
+        {displayTitle}
+        {session.messageCount ? (
+          <span className={styles.count}>
+            {t('sessionMessageCount', { count: session.messageCount })}
+          </span>
+        ) : null}
+      </div>
       <div className={styles.action} onClick={(event) => event.stopPropagation()}>
         <Menu
           options={[

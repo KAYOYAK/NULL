@@ -165,6 +165,15 @@ data class ModelManagerUiState(
     /** The last measurement, or null when none has run. */
     val benchmark: ModelBenchmark? = null,
 
+    /** 正在加载的模型；加载期间不允许再点别的。 */
+    val loadingModelId: String? = null,
+
+    /** 已加载、正在使用的模型；卡片据此显示「使用中」。 */
+    val loadedModelId: String? = null,
+
+    /** 上一次加载失败的原因。 */
+    val loadError: UiMessage? = null,
+
     /** 每个模型最近一次跑分，按时间先后；用来做跨模型对比。 */
     val benchmarks: List<com.kayoyak.demoapp.data.models.BenchmarkRecord> = emptyList(),
 
