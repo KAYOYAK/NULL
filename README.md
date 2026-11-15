@@ -26,9 +26,10 @@
 | --- | --- |
 | ![新对话](docs/shots/web-empty.png) | ![一轮回答](docs/shots/web-chat.png) |
 
-![从输入到回答的一轮，2× 速度](docs/demo-web.gif)
+![发送之后回答逐字出现，2× 速度](docs/demo-web.gif)
 
-<sub>gif 以 2× 速度播放；这是模拟器上的实测，真机快得多。</sub>
+<sub>gif 以 2× 播放：发送 → 思考 → 回答逐字出现。模拟器实测，真机快得多；
+速度读数不在动图里，见上面那张截图的 `tok/s`。</sub>
 
 这套界面来自 DeepSeek 开源的 [chat-demo](https://github.com/deepseek-ai/chat-demo)（MIT），
 在 `web/` 里改造为全本地：回复由设备上已经加载的 LiteRT-LM 引擎生成，前端不发一个网络请求。
