@@ -29,6 +29,8 @@ import com.kayoyak.demoapp.model.ModelRegistry
 import com.kayoyak.demoapp.model.ModelDescriptor
 import com.kayoyak.demoapp.model.ModelDownloadCoordinator
 import com.kayoyak.demoapp.model.DeviceMemory
+import com.kayoyak.demoapp.data.models.BenchmarkLog
+import com.kayoyak.demoapp.data.models.BenchmarkRecord
 import com.kayoyak.demoapp.model.ModelStore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -79,6 +81,8 @@ class ModelManagerViewModel(
     private val engine: LlmEngine? = null,
     /** Which models exist. Defaults to the catalogue for a caller with no container. */
     private val registry: ModelRegistry = InMemoryModelRegistry(),
+    /** 跑分记录；测试可以不传。 */
+    private val benchmarkLog: BenchmarkLog? = null,
     /**
      * How much memory the device has, for telling the user whether a model fits.
      *
@@ -92,6 +96,9 @@ class ModelManagerViewModel(
 ) : ViewModel() {
 
     private val pendingDelete = MutableStateFlow<PendingDelete?>(null)
+
+    /** 跑分失败的原因；成功时清空。 */
+    private val benchmarkError = MutableStateFlow<UiMessage?>(null)
 
     /**
      * A model the user picked that this device may not have room for.
@@ -158,6 +165,7 @@ class ModelManagerViewModel(
 
         benchmarking.value = descriptor.id
         benchmark.value = null
+        benchmarkError.value = null
         viewModelScope.launch {
             val result = try {
                 val model = LocalModel(
@@ -185,10 +193,29 @@ class ModelManagerViewModel(
                 benchmarking.value = null
                 throw e
             } catch (t: Throwable) {
+                // 不吞：跑分失败必须说话，否则按钮等于没接上。
+                android.util.Log.w("NullBenchmark", t.javaClass.name, t)
+                benchmarkError.value = UiMessage(
+                    R.string.models_benchmark_failed,
+                    t.message?.take(160) ?: t.javaClass.simpleName,
+                )
                 null
             }
 
             benchmarking.value = null
+            result?.let { timing ->
+                // 先落盘：对话框关掉之后这个数字还得留着，否则跑分只是为了看一眼。
+                benchmarkLog?.record(
+                    BenchmarkRecord(
+                        modelId = descriptor.id,
+                        displayName = descriptor.displayName,
+                        measuredAt = System.currentTimeMillis(),
+                        timeToFirstTokenMillis = timing.timeToFirstTokenMillis,
+                        prefillTokensPerSecond = timing.prefillTokensPerSecond,
+                        decodeTokensPerSecond = timing.decodeTokensPerSecond,
+                    ),
+                )
+            }
             benchmark.value = result?.let { ModelBenchmark(descriptor.displayName, it) }
         }
     }
@@ -196,6 +223,11 @@ class ModelManagerViewModel(
     /** No measurement has run, or the last one is being dismissed. */
     fun dismissBenchmark() {
         benchmark.value = null
+    }
+
+    /** 关掉跑分失败的提示。 */
+    fun dismissBenchmarkError() {
+        benchmarkError.value = null
     }
     /** The result has been read. */
     fun dismissVerification() {
@@ -298,15 +330,26 @@ class ModelManagerViewModel(
         /** The id of the model being benchmarked, or null. */
         val benchmarking: String? = null,
         val benchmark: ModelBenchmark? = null,
+        /** 每个模型最近一次跑分，用来做跨模型对比。 */
+        val benchmarks: List<com.kayoyak.demoapp.data.models.BenchmarkRecord> = emptyList(),
+        val benchmarkError: UiMessage? = null,
+    )
+
+    private data class ToolingCore(
+        val verifying: String?,
+        val verification: ModelVerification?,
+        val benchmarking: String?,
+        val benchmark: ModelBenchmark?,
     )
 
     private val tooling: Flow<Tooling> = combine(
-        verifying,
-        verification,
-        benchmarking,
-        benchmark,
-    ) { checking, outcome, running, measured ->
-        Tooling(checking, outcome, running, measured)
+        combine(verifying, verification, benchmarking, benchmark) { checking, outcome, running, measured ->
+            ToolingCore(checking, outcome, running, measured)
+        },
+        benchmarkLog?.records ?: MutableStateFlow(emptyList()),
+        benchmarkError,
+    ) { core, measuredHistory, failure ->
+        Tooling(core.verifying, core.verification, core.benchmarking, core.benchmark, measuredHistory, failure)
     }
 
     private val compute: Flow<Compute> = combine(
@@ -728,6 +771,8 @@ class ModelManagerViewModel(
             verifying = tooling.verifying,
             benchmarking = tooling.benchmarking,
             benchmark = tooling.benchmark,
+            benchmarks = tooling.benchmarks,
+            benchmarkError = tooling.benchmarkError,
             verification = tooling.verification,
             pendingDelete = inputs.pending,
             deleteError = inputs.notices.deleteError,

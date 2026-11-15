@@ -164,6 +164,17 @@ data class ModelManagerUiState(
     val benchmarking: String? = null,
     /** The last measurement, or null when none has run. */
     val benchmark: ModelBenchmark? = null,
+
+    /** 每个模型最近一次跑分，按时间先后；用来做跨模型对比。 */
+    val benchmarks: List<com.kayoyak.demoapp.data.models.BenchmarkRecord> = emptyList(),
+
+    /**
+     * 上一次跑分失败的原因。
+     *
+     * 这里必须有个位置：以前跑分失败是不出声的——没有弹窗、没有提示，按钮点下去
+     * 就像什么都没发生。那比报错更难查，因为它看起来像应用没接收到点击。
+     */
+    val benchmarkError: UiMessage? = null,
     /**
      * The size of the file that would be removed, and what the user loses.
      *

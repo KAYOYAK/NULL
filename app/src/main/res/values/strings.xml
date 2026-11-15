@@ -359,4 +359,9 @@
     <string name="sampling_varied_hint">措辞更活泼，适合写东西。小模型用这个可能变得不连贯。</string>
     <string name="publisher_internvl">上海人工智能实验室</string>
     <string name="model_internvl3_5_2b">2B 视觉语言模型：除了聊天，还能读图——截图、票据、表格、手写都行。需要先切到这个模型，切换后要重新加载引擎。</string>
+    <string name="models_benchmark_compare">跑分对比</string>
+    <string name="models_benchmark_compare_hint">最近一次跑分，按解码速度从快到慢。数字留下来才算比较过。</string>
+    <string name="models_benchmark_compare_row">%1$s · 解码 %2$s tok/s · 首 token %3$s ms</string>
+    <string name="models_benchmark_unknown">未知</string>
+    <string name="models_benchmark_failed">跑分没有跑完：%1$s</string>
 </resources>

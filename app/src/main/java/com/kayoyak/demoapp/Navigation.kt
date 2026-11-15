@@ -70,6 +70,7 @@ fun MainNavigation(start: NavKey = Models) {
                 settingsStore = container.settingsStore,
                 engine = container.llmEngine,
                 registry = container.modelRegistry,
+                benchmarkLog = container.benchmarkLog,
                 openPicked = container.openPickedFile,
                 importer = container.modelImporter,
               )

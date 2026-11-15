@@ -9,6 +9,7 @@ import com.kayoyak.demoapp.diagnostics.Speech
 import android.content.Context
 import com.kayoyak.demoapp.data.webhistory.EncryptedHistory
 import com.kayoyak.demoapp.data.settings.FileSettingsStore
+import com.kayoyak.demoapp.data.models.BenchmarkLog
 import com.kayoyak.demoapp.data.settings.SettingsStore
 import com.kayoyak.demoapp.inference.LiteRtLlmEngine
 import com.kayoyak.demoapp.inference.LlmEngine
@@ -239,6 +240,9 @@ class AppContainer(context: Context) {
         context.contentResolver.openInputStream(uri.toUri())
             ?: throw java.io.IOException("That file could not be opened")
     }
+
+    /** 跑分记录：数字留下来才能比较两个模型 */
+    val benchmarkLog: BenchmarkLog = BenchmarkLog(File(context.filesDir, "benchmarks.json"))
 
     /** 网页前端的会话历史，落在同一个加密工具上 */
     val webHistory: EncryptedHistory =

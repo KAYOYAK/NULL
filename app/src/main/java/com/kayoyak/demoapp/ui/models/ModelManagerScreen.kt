@@ -85,6 +85,7 @@ fun ModelManagerScreen(
         onDismissDeleteError = viewModel::dismissDeleteError,
         onDismissVerification = viewModel::dismissVerification,
         onDismissBenchmark = viewModel::dismissBenchmark,
+        onDismissBenchmarkError = viewModel::dismissBenchmarkError,
         onOpenAbout = onOpenAbout,
         onImportPicked = viewModel::prepareImport,
         onImportConfirmed = viewModel::confirmImport,
@@ -118,6 +119,7 @@ internal fun ModelManagerContent(
     onDismissDeleteError: () -> Unit,
     onDismissVerification: () -> Unit = {},
     onDismissBenchmark: () -> Unit = {},
+    onDismissBenchmarkError: () -> Unit = {},
     onOpenAbout: () -> Unit,
     onImportPicked: (String, String, Long) -> Unit,
     onImportConfirmed: (String, String, String) -> Unit,
@@ -140,6 +142,21 @@ internal fun ModelManagerContent(
         // A delete that did not happen. Shown above the list rather than on the
         // row, because the row's state is the fact and the message is about the
         // attempt.
+        state.benchmarkError?.let { error ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                UiMessageText(
+                    message = error,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = onDismissBenchmarkError) {
+                    Text(stringResource(R.string.settings_dismiss))
+                }
+            }
+        }
+
         state.deleteError?.let { error ->
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
@@ -160,6 +177,12 @@ internal fun ModelManagerContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp),
         ) {
+            if (state.benchmarks.isNotEmpty()) {
+                item(key = "benchmarks") {
+                    BenchmarkComparison(state.benchmarks)
+                }
+            }
+
             items(state.rows, key = { it.descriptor.id }) { row ->
                 ModelCard(
                     row = row,
@@ -389,6 +412,47 @@ private fun SamplingPicker(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.error,
             )
+        }
+    }
+}
+
+/**
+ * What each model measured, compared.
+ *
+ * The number the benchmark dialog shows is gone the moment it is dismissed, which
+ * makes running it on a second model pointless: there is nothing to compare
+ * against. This reads the stored results and sorts them by decode speed, the
+ * figure a conversation actually feels.
+ */
+@Composable
+private fun BenchmarkComparison(records: List<com.kayoyak.demoapp.data.models.BenchmarkRecord>) {
+    val fastestFirst = records.sortedByDescending { it.decodeTokensPerSecond ?: 0.0 }
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp)) {
+            Text(
+                stringResource(R.string.models_benchmark_compare),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                stringResource(R.string.models_benchmark_compare_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            fastestFirst.forEach { record ->
+                Text(
+                    stringResource(
+                        R.string.models_benchmark_compare_row,
+                        record.displayName,
+                        record.decodeTokensPerSecond?.let { "%.1f".format(it) }
+                            ?: stringResource(R.string.models_benchmark_unknown),
+                        record.timeToFirstTokenMillis?.toString()
+                            ?: stringResource(R.string.models_benchmark_unknown),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 2.dp),
+                )
+            }
         }
     }
 }
