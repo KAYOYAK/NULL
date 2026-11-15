@@ -15,6 +15,10 @@ export const en = {
   sessionDeleteFailed: 'Unable to delete this chat. Please try again.',
   settings: 'Settings',
   appName: 'API usage demo',
+  deleteMessage: 'Delete this reply',
+  deleteExchange: 'Delete this question and its reply',
+  deleteMessageBody: 'The reply is removed. There is no undo.',
+  deleteExchangeBody: 'The question and the replies below it are removed. There is no undo.',
   deleteSessionModalContentTitle: 'Delete chat?',
   deleteSessionWithFilesDescription:
     'This chat and its uploaded files will be permanently deleted and cannot be recovered. Delete this chat?',

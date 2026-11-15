@@ -17,6 +17,7 @@ import { SiteThumbnails } from '../search/SiteLogo.js'
 import { toggleSearchPanel, useSearchPanel } from '../search/searchPanelState.js'
 import { ReadAloudButton } from './ReadAloudButton.js'
 import { CopyButton } from './CopyButton.js'
+import { DeleteMessageButton } from './DeleteMessageButton.js'
 import { ReplyArea } from './ReplyArea.js'
 import { useReplyView } from './useReplyView.js'
 import {
@@ -153,6 +154,9 @@ export const AssistantMessage = memo(function AssistantMessage({
                 tooltipPlacement="bottom"
                 onClick={() => toggleKept(message.id)}
               />
+            ) : null}
+            {hasLocalEngine() ? (
+              <DeleteMessageButton sessionId={sessionId} messageId={message.id} exchange={false} />
             ) : null}
             {copyText && hasLocalEngine() ? (
               <IconButton

@@ -6,6 +6,7 @@ import { extractFileIds, getFileErrorCode, isRetryableApiError } from '../api/er
 import { cancelUpload, describeUploadError, uploadAttachment, useUploads } from '../attachments.js'
 import { useSettings } from '../settings.js'
 import { appendBranch, getVisibleMessages, normalizeSession, selectVersion } from './branches.js'
+import { deleteMessage as deleteMessageFrom } from './deleteMessages.js'
 import * as db from './db.js'
 import {
   clearAllDrafts,
@@ -671,6 +672,23 @@ export const editMessage = (sessionId: string, messageId: string, content: strin
   }))
   persist(sessionId)
   void streamReply(sessionId, reply, { history: path.slice(0, index), question })
+  return true
+}
+
+/** Deletes a message and its subtree, then writes the session out. */
+export const removeMessage = (sessionId: string, messageId: string): boolean => {
+  if (get().importingHistory || deletingSessions.has(sessionId)) {
+    return false
+  }
+  if (getStreamController(sessionId)) {
+    return false
+  }
+  const session = getSession(sessionId)
+  if (!session) {
+    return false
+  }
+  updateSession(sessionId, (current) => deleteMessageFrom(current, messageId))
+  persist(sessionId)
   return true
 }
 

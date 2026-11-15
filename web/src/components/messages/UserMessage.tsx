@@ -16,6 +16,8 @@ import {
 } from './BranchSwitcher.js'
 import { MessageFile } from './MessageFile.js'
 import { CopyButton } from './CopyButton.js'
+import { DeleteMessageButton } from './DeleteMessageButton.js'
+import { hasLocalEngine } from '../../services/api/local.js'
 import styles from './UserMessage.module.css'
 
 export const UserMessage = memo(function UserMessage({
@@ -116,6 +118,9 @@ export const UserMessage = memo(function UserMessage({
           <div className={styles.bottom}>
             <div className={clsx(styles.actions, isLast && styles.alwaysShow)}>
               {message.content ? <CopyButton text={message.content} /> : null}
+          {hasLocalEngine() ? (
+            <DeleteMessageButton sessionId={sessionId} messageId={message.id} exchange />
+          ) : null}
               <IconButton
                 icon={<IconEditOutline16 />}
                 tooltip={t('editMessage')}
