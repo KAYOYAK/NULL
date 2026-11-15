@@ -4,12 +4,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.core.view.WindowCompat
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import com.kayoyak.demoapp.data.settings.AppTheme
 import com.kayoyak.demoapp.diagnostics.AppLock
 import com.kayoyak.demoapp.ui.lock.DeviceAuth
 import com.kayoyak.demoapp.ui.lock.LockScreen
@@ -74,6 +78,18 @@ class MainActivity : ComponentActivity() {
       // about the whole window. A theme applied below the status bar and not to
       // it would look like a bug on every device.
       val current by settings.collectAsStateWithLifecycle()
+      // 状态栏图标与页面同一规则：主题说深色就浅图标，反之亦然。
+      val darkTheme = when (current.chosenTheme) {
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+      }
+      SideEffect {
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+          isAppearanceLightStatusBars = !darkTheme
+          isAppearanceLightNavigationBars = !darkTheme
+        }
+      }
 
       DemoAppTheme(theme = current.chosenTheme, fontScale = current.fontScale) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

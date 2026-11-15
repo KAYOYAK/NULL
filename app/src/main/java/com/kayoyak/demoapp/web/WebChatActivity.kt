@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kayoyak.demoapp.data.settings.AppTheme
 import com.kayoyak.demoapp.diagnostics.AppLock
@@ -277,6 +278,11 @@ class WebChatActivity : ComponentActivity() {
         val colour = if (dark) 0xFF121212.toInt() else 0xFFFFFFFF.toInt()
         rootView.setBackgroundColor(colour)
         window.decorView.setBackgroundColor(colour)
+        // 图标颜色也得跟着换：浅色主题 + 系统深色时，白色图标会压在白色页面上。
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !dark
+            isAppearanceLightNavigationBars = !dark
+        }
     }
 
     override fun onStop() {

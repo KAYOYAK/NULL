@@ -140,7 +140,15 @@ class NullLocalBridge(
             putExtra(MainActivity.EXTRA_SCREEN, screen)
         }
         return try {
-            context.startActivity(intent)
+            // A cross-fade, not the platform's slide: the page and the native
+            // screens share a palette, and a full-page push reads as switching
+            // apps rather than opening something over the conversation.
+            val options = android.app.ActivityOptions.makeCustomAnimation(
+                context,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+            )
+            context.startActivity(intent, options.toBundle())
             true
         } catch (error: Throwable) {
             Log.w("NullWeb", error.javaClass.name, error)
