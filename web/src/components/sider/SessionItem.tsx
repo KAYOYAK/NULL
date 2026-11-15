@@ -3,6 +3,9 @@ import { memo, useState } from 'react'
 import { useTranslate } from '../../i18n/index.js'
 import { IconEditOutline16, IconEllipsisOutline16, IconTrashOutline16 } from '../base/icons.js'
 import { renameSession, selectSession } from '../../services/chat/store.js'
+import { loadSession } from '../../services/chat/db.js'
+import { sessionAsMarkdown, sessionAsText } from '../../services/chat/share.js'
+import { hasLocalEngine, shareText } from '../../services/api/local.js'
 import type { SessionSummary } from '../../services/chat/types.js'
 import { IconButton } from '../base/IconButton.js'
 import { Menu } from '../base/Menu.js'
@@ -59,6 +62,34 @@ export const SessionItem = memo(function SessionItem({
       <div className={styles.action} onClick={(event) => event.stopPropagation()}>
         <Menu
           options={[
+            ...(hasLocalEngine()
+              ? [
+                  {
+                    key: 'share-text',
+                    label: t('sessionItemMenuShareText'),
+                    icon: <IconEditOutline16 />,
+                    onSelect: () => {
+                      void loadSession(session.id).then((full) => {
+                        if (full) {
+                          shareText(sessionAsText(full))
+                        }
+                      })
+                    },
+                  },
+                  {
+                    key: 'share-markdown',
+                    label: t('sessionItemMenuExportMarkdown'),
+                    icon: <IconEditOutline16 />,
+                    onSelect: () => {
+                      void loadSession(session.id).then((full) => {
+                        if (full) {
+                          shareText(sessionAsMarkdown(full))
+                        }
+                      })
+                    },
+                  },
+                ]
+              : []),
             {
               key: 'rename',
               label: t('sessionItemMenuRenameOption'),

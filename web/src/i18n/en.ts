@@ -20,6 +20,8 @@ export const en = {
     'This chat and its uploaded files will be permanently deleted and cannot be recovered. Delete this chat?',
   cancel: 'Cancel',
   delete: 'Delete',
+  sessionItemMenuShareText: 'Share the whole conversation',
+  sessionItemMenuExportMarkdown: 'Share as Markdown',
   sessionItemMenuRenameOption: 'Rename',
   more: 'More',
   close: 'Close',
