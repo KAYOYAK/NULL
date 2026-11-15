@@ -26,7 +26,9 @@
 | --- | --- |
 | ![新对话](docs/shots/web-empty.png) | ![一轮回答](docs/shots/web-chat.png) |
 
-![从输入到回答的一轮](docs/demo-web.gif)
+![对话页、模型页与语音入口的一次走动](docs/demo-web.gif)
+
+<sub>gif 以 2× 速度播放：对话页 → 模型页（滚到多模态那几档）→ 返回 → 语音入口。</sub>
 
 这套界面来自 DeepSeek 开源的 [chat-demo](https://github.com/deepseek-ai/chat-demo)（MIT），
 在 `web/` 里改造为全本地：回复由设备上已经加载的 LiteRT-LM 引擎生成，前端不发一个网络请求。
