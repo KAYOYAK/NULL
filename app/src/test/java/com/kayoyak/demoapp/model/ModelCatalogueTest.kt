@@ -80,6 +80,9 @@ class ModelCatalogueTest {
             // catalogue's first vision model, and that was the decision recorded
             // here rather than an accident of a download.
             R.string.publisher_internvl,
+            // Alibaba's Ovis line for documents and small text. Same company as
+            // Qwen but a separate line, so it is named separately.
+            R.string.publisher_ovis,
         )
         val foreign = ModelCatalogue.models
             .map { it.publisherRes }

@@ -374,4 +374,11 @@
     <string name="models_ram_cancel">取消</string>
     <string name="shortcut_new_chat_short">新对话</string>
     <string name="shortcut_new_chat_long">从空的开始</string>
+    <string name="model_internvl3_5_1b">1B 视觉语言模型，780 MB。除了聊天还能读图——截图、票据、表格、手写。图片会缩到 448×448，小字要拍近一点。需要先切到这个模型。</string>
+    <string name="model_minicpm_v_4_7_1b">面壁的 1B 视觉模型，1.6 GB。视觉编码器比 InternVL 1B 细，读小字和表格更稳一些。</string>
+    <string name="model_ovis2_5_2b">阿里的 Ovis2.5，2B，2 GB。读文档、表格和小字是它这一档的强项。</string>
+    <string name="model_minicpm_v_4">面壁的 8B 视觉模型，4.2 GB。目录里最准的一档，也需要 8 GB 以上内存才装得舒服。</string>
+    <string name="publisher_ovis">阿里巴巴</string>
+    <string name="models_modality_multimodal">多模态</string>
+    <string name="models_modality_text">纯文本</string>
 </resources>

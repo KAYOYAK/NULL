@@ -203,6 +203,7 @@ against the page).
 | F21 | A long conversation reports how many turns were dropped from the context | **not started** | `v1.1.2` audit: `chat_context_trimmed`. The page trims at 60% of the window and says nothing |
 | F22 | Session rows show how many messages they hold | **not started** | `v1.1.2` audit: `history_message_count` |
 | F23 | Home-screen shortcut for a new conversation | **not started** | `v1.1.2` audit: `shortcut_new_chat_*`. The shortcut targeted `MainActivity`, which is no longer the entry; restoring it means a deep link into the page |
+| F29 | Every catalogue entry states whether it can see images, and four more multimodal models were added (InternVL3.5 1B, MiniCPM-V 4.7 1B, Ovis2.5 2B, MiniCPM-V 4) | done | The capability was only in the display name, so code could not tell a vision model from a text one; 8 entries, 1 multimodal. The pins for the four new ones were read from each mirror's file headers (`x-linked-etag`) rather than a third-party card -- the card for InternVL3.5 1B still names an earlier publication (780.13 MB / 5ae4dbc9…), and pinning that would fail every download. `check-model-pins` could not confirm them from this machine: its .NET client gets 503 through the accelerator, so it reports CANNOT CHECK |
 
 ### The 128 strings, one by one
 

@@ -120,6 +120,14 @@ data class ModelDescriptor(
     val license: ModelLicense,
 
     /** Parameter count, for display. Approximate by nature. */
+    /**
+     * 能不能看图。
+     *
+     * 以前这件事只写在名字里（「（可看图）」），代码判断不了；现在它在字段上，
+     * 列表据此标「多模态」或「纯文本」。纯文本不是次品：它更快、更省内存，
+     * 很多机器上它才是对的选择——标出来是为了让人选得明白，不是为了分高低。
+     */
+    val multimodal: Boolean = false,
     val parametersBillions: Double,
 ) {
     /**
@@ -186,9 +194,88 @@ object ModelCatalogue {
      * against each model's own repository. See docs/legal/MODEL_LICENSES.md.
      */
     val models: List<ModelDescriptor> = listOf(
+      // 目录里最小的一档多模态：780 MB，4 GB 机器也能跑，图会缩到 448×448。
+      // 字节数与摘要取自镜像的文件头（819,838,976 / f861075d…），不是抄第三方卡片：
+      // 那张卡片还写着上一次发布（780.13 MB / 5ae4dbc9…），照它填会下载校验失败。
+      ModelDescriptor(
+        id = "internvl3_5_1b",
+        displayName = "InternVL3.5 1B",
+        publisherRes = R.string.publisher_internvl,
+        descriptionRes = R.string.model_internvl3_5_1b,
+        languages = setOf(ModelLanguage.CHINESE, ModelLanguage.ENGLISH),
+        url = "$HF_MIRROR/litert-community/InternVL3_5-1B/resolve/main/model.litertlm",
+        fallbackUrl = "$HF/litert-community/InternVL3_5-1B/resolve/main/model.litertlm",
+        fileName = "InternVL3_5-1B.litertlm",
+        sizeBytes = 819_838_976L,
+        sha256 = "f861075ddc32895ae9e3f395889e0eba25ab99afd3a9596041ca3d1737cbd689",
+        license = ModelLicense(
+          spdxId = "Apache-2.0",
+          sourceUrl = "$HF/litert-community/InternVL3_5-1B",
+        ),
+        multimodal = true,
+        parametersBillions = 1.0,
+      ),
+      // 面壁的 1B 视觉模型。三个文件里选 int8 视觉那份：另外两份是 2.1 GB 和 1.2 GB，
+      // 后者没有视觉编码器。
+      ModelDescriptor(
+        id = "minicpm-v-4_7-1b",
+        displayName = "MiniCPM-V 4.7 1B",
+        publisherRes = R.string.publisher_minicpm,
+        descriptionRes = R.string.model_minicpm_v_4_7_1b,
+        languages = setOf(ModelLanguage.CHINESE, ModelLanguage.ENGLISH),
+        url = "$HF_MIRROR/litert-community/MiniCPM-V-4.7-1B/resolve/main/MiniCPM-V-4.7-1B-VL_int8vis.litertlm",
+        fallbackUrl = "$HF/litert-community/MiniCPM-V-4.7-1B/resolve/main/MiniCPM-V-4.7-1B-VL_int8vis.litertlm",
+        fileName = "MiniCPM-V-4.7-1B-VL.litertlm",
+        sizeBytes = 1_698_202_736L,
+        sha256 = "20c73b5a1e48a315974cff1853535ff5d017100b6420d5ef221b9dd1b955dd7c",
+        license = ModelLicense(
+          spdxId = "Apache-2.0",
+          sourceUrl = "$HF/litert-community/MiniCPM-V-4.7-1B",
+        ),
+        multimodal = true,
+        parametersBillions = 1.0,
+      ),
+      // 阿里的 Ovis2.5 2B：2 GB，视觉编码器比 InternVL 细，读小字更稳一点。
+      ModelDescriptor(
+        id = "ovis2_5_2b",
+        displayName = "Ovis2.5 2B",
+        publisherRes = R.string.publisher_ovis,
+        descriptionRes = R.string.model_ovis2_5_2b,
+        languages = setOf(ModelLanguage.CHINESE, ModelLanguage.ENGLISH),
+        url = "$HF_MIRROR/litert-community/Ovis2.5-2B/resolve/main/Ovis2.5-2B.litertlm",
+        fallbackUrl = "$HF/litert-community/Ovis2.5-2B/resolve/main/Ovis2.5-2B.litertlm",
+        fileName = "Ovis2.5-2B.litertlm",
+        sizeBytes = 2_148_743_168L,
+        sha256 = "4a705046aa62fa7328340b99835c3a44424d2dc53db511c5e50d8d9dec6a1db4",
+        license = ModelLicense(
+          spdxId = "Apache-2.0",
+          sourceUrl = "$HF/litert-community/Ovis2.5-2B",
+        ),
+        multimodal = true,
+        parametersBillions = 2.0,
+      ),
+      // 目录里最大的一份多模态：4.2 GB。只给 8 GB 以上的机器，描述里写明。
+      ModelDescriptor(
+        id = "minicpm-v-4",
+        displayName = "MiniCPM-V 4 量化版",
+        publisherRes = R.string.publisher_minicpm,
+        descriptionRes = R.string.model_minicpm_v_4,
+        languages = setOf(ModelLanguage.CHINESE, ModelLanguage.ENGLISH),
+        url = "$HF_MIRROR/litert-community/MiniCPM-V-4/resolve/main/MiniCPM-V-4-int8.litertlm",
+        fallbackUrl = "$HF/litert-community/MiniCPM-V-4/resolve/main/MiniCPM-V-4-int8.litertlm",
+        fileName = "MiniCPM-V-4-int8.litertlm",
+        sizeBytes = 4_214_021_104L,
+        sha256 = "d45ef0cd8141597d731d002b72a152ab1a0f8b9cda8d9a0f5e1bc3a4689dcbd0",
+        license = ModelLicense(
+          spdxId = "Apache-2.0",
+          sourceUrl = "$HF/litert-community/MiniCPM-V-4",
+        ),
+        multimodal = true,
+        parametersBillions = 8.0,
+      ),
         ModelDescriptor(
             id = "internvl3_5_2b",
-            displayName = "InternVL3.5 2B（可看图）",
+            displayName = "InternVL3.5 2B",
             publisherRes = R.string.publisher_internvl,
             descriptionRes = R.string.model_internvl3_5_2b,
             languages = setOf(ModelLanguage.CHINESE, ModelLanguage.ENGLISH),
@@ -201,7 +288,8 @@ object ModelCatalogue {
                 spdxId = "Apache-2.0",
                 sourceUrl = "$HF/litert-community/InternVL3_5-2B",
             ),
-            parametersBillions = 2.0,
+            multimodal = true,
+      parametersBillions = 2.0,
         ),
         ModelDescriptor(
             id = "qwen3-0.6b-int4",

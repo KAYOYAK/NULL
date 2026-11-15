@@ -553,6 +553,27 @@ private fun ModelCard(
             // English about something else -- which reads as a broken app rather
             // than as the wrong model for the job.
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // 多模态还是纯文本，和语言并排：两者都是"这个模型适合干什么"的一部分。
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = if (model.multimodal) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                ) {
+                    Text(
+                        stringResource(
+                            if (model.multimodal) {
+                                R.string.models_modality_multimodal
+                            } else {
+                                R.string.models_modality_text
+                            },
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    )
+                }
                 model.languages.forEach { language ->
                     Surface(
                         shape = MaterialTheme.shapes.small,
