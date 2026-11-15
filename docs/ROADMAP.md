@@ -123,6 +123,7 @@ Recorded so the decision is not silently relitigated. The three bottom lines are
 
 | Feature | Constraint |
 | --- | --- |
+| Migrate 1.1.2's conversation files into the page | Not a principle, an arithmetic: there is no installed base to migrate. The files stay where they are, unread, and the 1.2.x upgrade path reads none of them. Written down because the gap is real -- a user who did install 1.1.2 loses sight of their history -- and the reason it is not closed is that writing a migration for zero users is code nobody runs, with a failure mode nobody would see. Revisit if anyone is ever on 1.1.2. |
 | Browse and download any GGUF model | P1 — every model here carries a licence record and a reachable source; arbitrary downloads cannot. |
 | Multiple providers, custom API endpoints | P2 — the network is for downloading models only. |
 | Web search grounding | P2 |
