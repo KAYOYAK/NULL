@@ -262,18 +262,9 @@ class ModelManagerViewModel(
                 engine.generate(
                     prompt,
                     // A fixed length and no sampling surprises: this measures speed.
-                    // 0.1 而不是 0.0：运行时把温度 0 当成非法采样器配置，generate 会直接
-                       // 不产出任何事件就结束——这正是跑分一直静默失败的根因。
-                       GenerationConfig(maxTokens = BENCHMARK_TOKENS, temperature = 0.1),
+                    GenerationConfig(maxTokens = BENCHMARK_TOKENS, temperature = 0.0),
                 ).collect { event ->
-                    when (event) {
-                       is GenerationEvent.Done -> timing = event.timing
-                       is GenerationEvent.Failed -> android.util.Log.w(
-                           "NullBenchmark",
-                           "generate failed: " + (event.error.message ?: event.error.javaClass.simpleName),
-                       )
-                       else -> Unit
-                   }
+                    if (event is GenerationEvent.Done) timing = event.timing
                 }
                 timing
             } catch (e: CancellationException) {
