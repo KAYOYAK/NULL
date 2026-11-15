@@ -1,7 +1,7 @@
 {
   "generatedWith": "check-licenses.ps1 -Update",
   "configuration": "releaseRuntimeClasspath",
-  "artifactCount": 136,
+  "artifactCount": 137,
   "artifacts": [
     {
       "coordinate": "androidx.activity:activity-compose:1.13.0",
@@ -677,6 +677,12 @@
     },
     {
       "coordinate": "androidx.viewpager:viewpager:1.0.0",
+      "licenceId": "Apache-2.0",
+      "licenceRaw": "The Apache Software License, Version 2.0",
+      "source": "pom"
+    },
+    {
+      "coordinate": "androidx.webkit:webkit:1.18.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"

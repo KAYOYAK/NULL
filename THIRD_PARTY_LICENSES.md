@@ -8,13 +8,13 @@
   section 4 requires these notices to travel with every copy.
 -->
 
-Generated from the releaseRuntimeClasspath configuration (136 artifacts).
+Generated from the releaseRuntimeClasspath configuration (137 artifacts).
 
 ## Summary
 
 | Licence | Artifacts |
 | --- | --- |
-| Apache-2.0 | 135 |
+| Apache-2.0 | 136 |
 | CC0-1.0 | 1 |
 
 ## Apache-2.0
@@ -132,6 +132,7 @@ Generated from the releaseRuntimeClasspath configuration (136 artifacts).
 - `androidx.vectordrawable:vectordrawable:1.1.0`
 - `androidx.versionedparcelable:versionedparcelable:1.1.1`
 - `androidx.viewpager:viewpager:1.0.0`
+- `androidx.webkit:webkit:1.18.0`
 - `androidx.window:window-core-android:1.5.0`
 - `androidx.window:window-core:1.5.0`
 - `androidx.window:window:1.5.0`
