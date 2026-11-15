@@ -170,6 +170,12 @@ export const zh = {
   settingsLocaleZhCN: '简体中文',
   settingsLocaleEnUS: 'English',
   // NULL: 全本地模式（chat-demo 作为 NULL 的前端时使用）
+  localModelLoading: '模型正在加载，稍等一下再发',
+  localModelMissing: '还没有加载模型：先在应用里选一个模型并启动引擎',
+  localTtsUnavailable: '这台设备没有可用的系统语音引擎',
+  localTtsInitialising: '语音引擎还在初始化，稍后再试',
+  localEmptyPrompt: '空提问',
+  localGenerationFailed: '本机生成失败',
   localEngineTitle: '本机引擎',
   localEngineReady: '模型在这台设备上运行，不联网',
   localEngineNotReady: '未就绪：{state}',

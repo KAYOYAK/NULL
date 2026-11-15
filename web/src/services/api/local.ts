@@ -1,3 +1,5 @@
+import { translate } from '../../i18n/index.js'
+import type { TranslationKey } from '../../i18n/index.js'
 import type { CreateMessageRequest, MessageParam, MessageStreamEvent } from './types.js'
 
 /**
@@ -27,6 +29,24 @@ type NullLocalBridge = {
 }
 
 type Emit = (id: string, kind: string, payload: string) => void
+
+/**
+ * 桥回的是机器码，不是句子：同一段文字在 Android 侧属于 strings.xml，
+ * 在这套前端属于 i18n，两边各译各的，不互相搬运文案。
+ */
+const LOCAL_ERROR_KEYS: Record<string, TranslationKey> = {
+  loading: 'localModelLoading',
+  missing_model: 'localModelMissing',
+  tts_unavailable: 'localTtsUnavailable',
+  tts_initialising: 'localTtsInitialising',
+  empty_prompt: 'localEmptyPrompt',
+  generation_failed: 'localGenerationFailed',
+}
+
+export const localErrorText = (code: string): string => {
+  const key = LOCAL_ERROR_KEYS[code]
+  return key ? translate(key) : code
+}
 
 const bridge = (): NullLocalBridge | undefined =>
   (globalThis as { NullLocal?: NullLocalBridge }).NullLocal
@@ -140,10 +160,13 @@ export async function* streamLocalMessage(
           queue.push({ type: 'message_stop' })
           finished = true
           break
-        case 'error':
-          failure = new Error(String(data.message ?? '本机生成失败'))
+        case 'error': {
+          const detail = typeof data.detail === 'string' ? data.detail : ''
+          const text = localErrorText(String(data.message ?? ''))
+          failure = new Error(detail ? `${text}（${detail}）` : text)
           finished = true
           break
+        }
         default:
           break
       }
@@ -206,7 +229,7 @@ export async function* streamLocalMessage(
 export const localSpeak = (text: string): { ok: boolean; reason: string } => {
   const local = bridge()
   if (!local?.speak) {
-    return { ok: false, reason: '本机没有可用的语音合成' }
+    return { ok: false, reason: localErrorText('tts_unavailable') }
   }
   try {
     const result = local.speak(text)

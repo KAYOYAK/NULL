@@ -179,6 +179,12 @@ export const en = {
   settingsLocaleZhCN: 'Simplified Chinese',
   settingsLocaleEnUS: 'English',
   // NULL: fully local mode (chat-demo as NULL's front end)
+  localModelLoading: 'The model is still loading; try again in a moment',
+  localModelMissing: 'No model loaded yet: pick one in the app and start the engine',
+  localTtsUnavailable: 'This device has no usable system speech engine',
+  localTtsInitialising: 'The speech engine is still starting; try again shortly',
+  localEmptyPrompt: 'Empty prompt',
+  localGenerationFailed: 'On-device generation failed',
   localEngineTitle: 'On-device engine',
   localEngineReady: 'The model runs on this device; nothing leaves it',
   localEngineNotReady: 'Not ready: {state}',

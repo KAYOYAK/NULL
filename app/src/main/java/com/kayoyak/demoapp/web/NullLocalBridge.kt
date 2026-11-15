@@ -3,8 +3,8 @@ package com.kayoyak.demoapp.web
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.webkit.JavascriptInterface
 import android.speech.tts.TextToSpeech
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.kayoyak.demoapp.AppContainer
 import com.kayoyak.demoapp.inference.EngineState
@@ -24,15 +24,21 @@ import java.util.Locale
 import java.util.UUID
 
 /**
- * 把网页前端接到本机引擎上。
+ * Connects the web front end to the engine on this device.
  *
- * 网页那一侧只认识 `MessageStreamEvent`（见 web/src/services/api/types.ts），
- * 这里负责两件事：把它的请求翻译成引擎能吃的轮次，再把引擎的增量翻译回同样的
- * 事件形状。这样前端不需要知道回复是云端还是本机生成的，历史、分支、导出都不变。
+ * The page only understands `MessageStreamEvent` (see
+ * web/src/services/api/types.ts). This class does two translations: a request
+ * into engine turns, and the engine's deltas back into the same event shapes the
+ * cloud transport produced. Nothing above it -- reply rendering, branches,
+ * history, export -- can tell which side answered.
  *
- * 协议（Kotlin 实现，JS 侧在 web/src/services/api/local.ts）：
- *   available() / probe() / start(requestJson) / abort(id)
- *   回推：window.__nullLocalEmit(id, "start"|"text"|"done"|"error", payloadJson)
+ * Protocol (implemented here, consumed by web/src/services/api/local.ts):
+ *   available() / probe() / start(requestJson) / abort(id) / speak / stopSpeak
+ *   pushed back: window.__nullLocalEmit(id, "start"|"text"|"done"|"error", payloadJson)
+ *
+ * Answers are machine codes, never sentences. Words a person reads belong to a
+ * catalogue, and this bridge has two audiences with two of them: strings.xml for
+ * the Compose screens, web/src/i18n for the page.
  */
 class NullLocalBridge(
     private val context: Context,
@@ -43,19 +49,19 @@ class NullLocalBridge(
     private val jobs = HashMap<String, Job>()
     private val main = Handler(Looper.getMainLooper())
 
-    /** 设备自带语音合成：朗读走它，离线可用，不经过云端 */
+    /** The platform's own speech engine: read-aloud runs on the device, offline. */
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var ttsFailure: String? = null
 
-
     init {
-        // 构造要一点时间，先准备好；speak() 在没就绪时如实返回原因
+        // Constructing takes a moment, so start early; speak() reports honestly
+        // when it is asked before the engine is ready.
         main.post {
             tts = TextToSpeech(context) { status ->
                 ttsReady = status == TextToSpeech.SUCCESS
                 if (!ttsReady) {
-                    ttsFailure = "系统语音引擎不可用"
+                    ttsFailure = "tts_unavailable"
                 }
             }.apply {
                 language = Locale.getDefault()
@@ -64,27 +70,9 @@ class NullLocalBridge(
     }
 
     @JavascriptInterface
-    fun speak(text: String): String {
-        if (text.isBlank()) {
-            return "ok"
-        }
-        if (!ttsReady) {
-            return ttsFailure ?: "语音引擎还在初始化"
-        }
-        val engine = tts ?: return "系统语音引擎不可用"
-        main.post { engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "null-local-tts") }
-        return "ok"
-    }
-
-    @JavascriptInterface
-    fun stopSpeak() {
-        main.post { tts?.stop() }
-    }
-
-    @JavascriptInterface
     fun available(): String = "1"
 
-    /** 引擎状态一句话，网页用它决定能不能发消息 */
+    /** Engine state as one code; the page decides whether it may send. */
     @JavascriptInterface
     fun probe(): String = when (val state = container.llmEngine.state.value) {
         is EngineState.Ready -> "ready"
@@ -107,7 +95,26 @@ class NullLocalBridge(
         job?.cancel()
     }
 
-    /** 页面销毁时停掉还在生成的轮次，避免桥接对象被引擎回调拖着不放 */
+    @JavascriptInterface
+    fun speak(text: String): String {
+        if (text.isBlank()) {
+            return "ok"
+        }
+        if (!ttsReady) {
+            return ttsFailure ?: "tts_initialising"
+        }
+        val engine = tts ?: return "tts_unavailable"
+        main.post { engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "null-local-tts") }
+        return "ok"
+    }
+
+    @JavascriptInterface
+    fun stopSpeak() {
+        main.post { tts?.stop() }
+    }
+
+    /** Stops in-flight turns when the page goes away, so the bridge does not
+     * outlive its WebView through an engine callback. */
     fun dispose() {
         main.post { tts?.shutdown() }
         tts = null
@@ -133,13 +140,13 @@ class NullLocalBridge(
             val request = JSONObject(raw)
             val state = container.llmEngine.state.value
             if (state !is EngineState.Ready) {
-                emit(id, "error", JSONObject().put("message", notReadyReason(state)))
+                emit(id, "error", failure(notReadyReason(state)))
                 return
             }
 
             val prompt = request.optString("prompt")
             if (prompt.isBlank()) {
-                emit(id, "error", JSONObject().put("message", "空提问"))
+                emit(id, "error", failure("empty_prompt"))
                 return
             }
 
@@ -156,8 +163,9 @@ class NullLocalBridge(
             }
             container.llmEngine.resetConversation(history)
 
-            // 系统提示在加载模型时就定了（LlmEngine.load 的 systemPrompt），
-            // 引擎已经就绪时改不了；第一轮把它拼进问题，后续轮次靠历史携带。
+            // The system prompt is fixed when the model is loaded (LlmEngine.load's
+            // systemPrompt) and cannot be changed on a ready engine, so the first
+            // turn carries it in the text and later turns inherit it from history.
             val system = request.optString("system").trim()
             val text = if (history.isEmpty() && system.isNotEmpty()) "$system\n\n$prompt" else prompt
 
@@ -181,21 +189,29 @@ class NullLocalBridge(
                     }
 
                     is GenerationEvent.Failed ->
-                        emit(id, "error", JSONObject().put("message", event.error.readable()))
+                        emit(id, "error", failure("generation_failed", event.error.readable()))
                 }
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Throwable) {
-            emit(id, "error", JSONObject().put("message", error.readable()))
+            emit(id, "error", failure("generation_failed", error.readable()))
         } finally {
             synchronized(jobs) { jobs.remove(id) }
         }
     }
 
+    /** A code the page translates, plus the engine's own words as a detail field. */
+    private fun failure(code: String, detail: String? = null): JSONObject =
+        JSONObject().put("message", code).apply {
+            if (!detail.isNullOrBlank()) {
+                put("detail", detail)
+            }
+        }
+
     private fun notReadyReason(state: EngineState): String = when (state) {
-        is EngineState.Loading -> "模型正在加载，稍等再发"
-        EngineState.Idle -> "还没有加载模型：先在应用里选一个模型并启动引擎"
+        is EngineState.Loading -> "loading"
+        EngineState.Idle -> "missing_model"
         is EngineState.Ready -> ""
     }
 
