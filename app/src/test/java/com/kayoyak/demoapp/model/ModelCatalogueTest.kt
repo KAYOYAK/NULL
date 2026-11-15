@@ -76,6 +76,10 @@ class ModelCatalogueTest {
             R.string.publisher_qwen,
             R.string.publisher_minicpm,
             R.string.publisher_deepseek,
+            // Shanghai AI Laboratory (InternVL). Added deliberately: it is the
+            // catalogue's first vision model, and that was the decision recorded
+            // here rather than an accident of a download.
+            R.string.publisher_internvl,
         )
         val foreign = ModelCatalogue.models
             .map { it.publisherRes }

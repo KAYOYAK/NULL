@@ -34,6 +34,7 @@ referred to -- and no claim is made to any of them.
 | --- | --- | --- |
 | Qwen, 通义千问, 阿里通义千问 | Alibaba Group (阿里巴巴集团) | Model catalogue |
 | MiniCPM, 面壁智能 | ModelBest Inc. (北京面壁智能科技) | Model catalogue |
+| InternVL, 上海人工智能实验室 | Shanghai AI Laboratory (上海人工智能实验室) | Model catalogue |
 | DeepSeek, 深度求索 | Hangzhou DeepSeek Artificial Intelligence (杭州深度求索人工智能) | Model catalogue |
 | Hugging Face, Hugging Face Hub | Hugging Face, Inc. | Download hosts, docs |
 | Android, Google Play, LiteRT | Google LLC | Platform targets, dependencies |

@@ -943,6 +943,7 @@ private class FakeEngine : com.kayoyak.demoapp.inference.LlmEngine {
     override fun generate(
         prompt: String,
         config: com.kayoyak.demoapp.inference.GenerationConfig,
+        images: List<ByteArray>,
     ): kotlinx.coroutines.flow.Flow<com.kayoyak.demoapp.inference.GenerationEvent> {
         prompts += prompt
         configs += config

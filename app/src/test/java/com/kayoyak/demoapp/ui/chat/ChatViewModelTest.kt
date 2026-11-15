@@ -168,7 +168,11 @@ private class FakeEngine : LlmEngine {
     /** The prompt of the most recent generation, for asserting what was asked. */
     var lastPrompt: String? = null
 
-    override fun generate(prompt: String, config: GenerationConfig): Flow<GenerationEvent> = flow {
+    override fun generate(
+        prompt: String,
+        config: GenerationConfig,
+        images: List<ByteArray>,
+    ): Flow<GenerationEvent> = flow {
         lastConfig = config
         lastPrompt = prompt
         // Open-ended in the sense that the test decides when generation ends,
