@@ -80,6 +80,7 @@
 模型卡片上的「加载」就是切换：加载之后就由它回答，卡片上会标「使用中」。同一行右边的
 「删除」删的是文件，两者互不影响。
 
+
 | 设置 | 运行在 / 提示词 / 回答 | 深色设置 |
 | --- | --- | --- |
 | ![设置](docs/shots/04-settings.png) | ![运行在](docs/shots/10-settings-sampler.png) | ![深色设置](docs/shots/12-settings-dark.png) |
