@@ -1,5 +1,12 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import { toSessionSummary, type Session, type SessionSummary } from './types.js'
+import {
+  hasLocalEngine,
+  historyDelete,
+  historyList,
+  historyRead,
+  historyWrite,
+} from '../api/local.js'
 
 /** IndexedDB 存储结构版本；新增或调整存储、索引时递增。 */
 const DB_VERSION = 11
@@ -75,13 +82,108 @@ const getDB = () =>
     throw error
   }))
 
-export const loadSessionSummaries = async (): Promise<SessionSummary[]> =>
-  (await (await getDB()).getAll('sessionSummaries')).map(toSessionSummary)
 
-export const loadSession = async (id: string): Promise<Session | undefined> =>
-  (await getDB()).get('sessions', id)
+/** 删掉一个会话引用到的本机原件（没有别处引用时）。 */
+const deleteFilesOf = async (session: Session): Promise<void> => {
+  const ids = new Set<string>()
+  for (const message of session.messages) {
+    // 只有用户消息带附件；服务端 id 是原件在 IndexedDB 里的键。
+    for (const file of message.role === 'user' ? message.files ?? [] : []) {
+      ids.add(file.serverId ?? file.id)
+    }
+  }
+  if (ids.size === 0) {
+    return
+  }
+  const tx = (await getDB()).transaction('files', 'readwrite')
+  for (const id of ids) {
+    await tx.store.delete(id)
+  }
+  await tx.done
+}
+
+
+/**
+ * Moves sessions written before the encrypted store existed.
+ *
+ * The first build that used the bridge wrote to IndexedDB; those sessions are
+ * still there and would simply disappear from the list, which is indistinguishable
+ * from losing them. Copied once, then the marker stops it from running again --
+ * a later session deleted on purpose must not come back.
+ */
+const migrateToEncrypted = async (): Promise<void> => {
+  const MARKER = 'null:history-migrated'
+  try {
+    // The marker alone is not proof: an earlier build wrote the marker after
+    // writing empty files, and those sessions must be recoverable. If the
+    // encrypted store holds nothing, the migration runs again.
+    // Readable content, not file names: a broken earlier build left empty files
+    // behind, and their names would otherwise look like a finished migration.
+    if (localStorage.getItem(MARKER) && historyList().some((id) => historyRead(id))) {
+      return
+    }
+    const legacy = await (await getDB()).getAll('sessions')
+    let allWritten = true
+    for (const session of legacy) {
+      if (session?.id) {
+        allWritten = historyWrite(session.id, JSON.stringify(session)) && allWritten
+      }
+    }
+    if (allWritten) {
+      localStorage.setItem(MARKER, '1')
+    }
+  } catch {
+    // 迁移失败不阻断使用：下一次打开再试。
+  }
+}
+
+export const loadSessionSummaries = async (): Promise<SessionSummary[]> => {
+  // 本机模式：会话文档在应用的加密存储里（附件原件仍在这里的 IndexedDB）。
+  if (hasLocalEngine()) {
+    await migrateToEncrypted()
+    return historyList()
+      .map((id) => historyRead(id))
+      .filter((json): json is string => Boolean(json))
+      .map((json) => {
+        try {
+          return JSON.parse(json) as Session
+        } catch {
+          return null
+        }
+      })
+      .filter((session): session is Session => session !== null)
+      .map((session) => toSessionSummary(session))
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+  }
+  return (await (await getDB()).getAll('sessionSummaries')).map(toSessionSummary)
+}
+
+export const loadSession = async (id: string): Promise<Session | undefined> => {
+  if (hasLocalEngine()) {
+    const json = historyRead(id)
+    if (!json) {
+      return undefined
+    }
+    try {
+      return JSON.parse(json) as Session
+    } catch {
+      return undefined
+    }
+  }
+  return (await getDB()).get('sessions', id)
+}
 
 export const saveSession = async (session: Session, files: StoredFile[] = []): Promise<void> => {
+  if (hasLocalEngine()) {
+    if (!historyWrite(session.id, JSON.stringify(session))) {
+      throw new Error('encrypted history write failed')
+    }
+    // 附件原件（图片等）仍走 IndexedDB：它们没有可复用的明文风险，且需要 Blob。
+    if (files.length > 0) {
+      await putFiles('files', files)
+    }
+    return
+  }
   const summary = storedSummary(session)
   const tx = (await getDB()).transaction(['sessions', 'sessionSummaries', 'files'], 'readwrite')
   await Promise.all([
@@ -103,6 +205,13 @@ export const saveSession = async (session: Session, files: StoredFile[] = []): P
 
 /** 未打开的会话也可重命名，只读取该会话，原子更新详情和列表。 */
 export const renameSession = async (id: string, title: string): Promise<void> => {
+  if (hasLocalEngine()) {
+    const existing = await loadSession(id)
+    if (existing) {
+      await saveSession({ ...existing, title })
+    }
+    return
+  }
   const tx = (await getDB()).transaction(['sessions', 'sessionSummaries'], 'readwrite')
   await Promise.all([
     (async () => {
@@ -125,6 +234,15 @@ export const renameSession = async (id: string, title: string): Promise<void> =>
 
 /** 删除会话，仅清理已无会话引用的本地原件；远端文件不删。 */
 export const deleteSession = async (sessionId: string): Promise<void> => {
+  if (hasLocalEngine()) {
+    const existing = await loadSession(sessionId)
+    historyDelete(sessionId)
+    if (existing) {
+      // 只清掉本机原件；远端文件本来就不存在。
+      await deleteFilesOf(existing)
+    }
+    return
+  }
   const tx = (await getDB()).transaction(['sessions', 'sessionSummaries', 'files'], 'readwrite')
   await Promise.all([
     (async () => {

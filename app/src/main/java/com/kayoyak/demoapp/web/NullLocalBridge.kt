@@ -22,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 import android.Manifest
@@ -163,6 +164,25 @@ class NullLocalBridge(
         }
         main.post { webView.evaluateJavascript(script, null) }
     }
+
+    /**
+     * The page's sessions, kept in the app's encrypted store rather than IndexedDB.
+     *
+     * Four calls, because a session document is opaque here: the page serialises it
+     * and this layer only stores bytes it cannot read without the app's key.
+     */
+    @JavascriptInterface
+    fun historyList(): String = JSONArray(container.webHistory.ids()).toString()
+
+    @JavascriptInterface
+    fun historyRead(id: String): String? = container.webHistory.read(id)
+
+    @JavascriptInterface
+    fun historyWrite(id: String, json: String): Boolean = container.webHistory.write(id, json)
+
+    @JavascriptInterface
+    fun historyDelete(id: String): Boolean =
+        runBlocking { container.webHistory.delete(id) }
 
     /**
      * The saved prompts, as the settings screen stores them.

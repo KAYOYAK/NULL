@@ -8,6 +8,7 @@ import com.kayoyak.demoapp.diagnostics.CrashLog
 import com.kayoyak.demoapp.diagnostics.Speech
 import android.content.Context
 import com.kayoyak.demoapp.data.chat.ChatStore
+import com.kayoyak.demoapp.data.webhistory.EncryptedHistory
 import com.kayoyak.demoapp.data.chat.FileChatStore
 import com.kayoyak.demoapp.data.settings.FileSettingsStore
 import com.kayoyak.demoapp.data.settings.SettingsStore
@@ -243,6 +244,10 @@ class AppContainer(context: Context) {
     }
 
     val chatStore: ChatStore = FileChatStore(File(context.filesDir, "chats"))
+
+    /** 网页前端的会话历史，落在同一个加密工具上 */
+    val webHistory: EncryptedHistory =
+        EncryptedHistory(File(context.filesDir, "web-history"))
 
     /**
      * The inference engine.

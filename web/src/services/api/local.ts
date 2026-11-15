@@ -27,6 +27,11 @@ type NullLocalBridge = {
   share?: (text: string) => boolean
   /** 已保存的提示词 */
   prompts?: () => string
+  /** 会话历史：落在应用的加密存储里，不是 IndexedDB */
+  historyList?: () => string
+  historyRead?: (id: string) => string | null
+  historyWrite?: (id: string, json: string) => boolean
+  historyDelete?: (id: string) => boolean
   /** 上下文占用与窗口 */
   context?: () => string
   /** 主题："system" | "light" | "dark" */
@@ -266,6 +271,57 @@ export const listPrompts = (): { name: string; body: string }[] => {
       .map((item) => ({ name: item.name as string, body: item.body as string }))
   } catch {
     return []
+  }
+}
+
+
+/**
+ * The page's sessions, kept by the app instead of IndexedDB.
+ *
+ * chat-demo stores sessions in IndexedDB, which is plain: the WebView's data
+ * directory holds every conversation in the clear. These four calls move the
+ * documents onto the app's encrypted file store. The document itself is opaque
+ * here -- the page serialises it, the bridge stores bytes.
+ */
+const historyBridge = () => {
+  const local = bridge()
+  if (!local?.historyList) {
+    return null
+  }
+  return local
+}
+
+export const historyList = (): string[] => {
+  try {
+    const raw = historyBridge()?.historyList?.()
+    const parsed: unknown = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export const historyRead = (id: string): string | null => {
+  try {
+    return historyBridge()?.historyRead?.(id) ?? null
+  } catch {
+    return null
+  }
+}
+
+export const historyWrite = (id: string, json: string): boolean => {
+  try {
+    return historyBridge()?.historyWrite?.(id, json) ?? false
+  } catch {
+    return false
+  }
+}
+
+export const historyDelete = (id: string): boolean => {
+  try {
+    return historyBridge()?.historyDelete?.(id) ?? false
+  } catch {
+    return false
   }
 }
 
