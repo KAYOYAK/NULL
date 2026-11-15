@@ -1,8 +1,10 @@
 package com.kayoyak.demoapp.web
 
+import android.content.ClipboardManager
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.speech.tts.TextToSpeech
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -23,6 +25,7 @@ import org.json.JSONObject
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import android.util.Base64
 import java.util.Locale
 import java.util.UUID
 
@@ -103,6 +106,51 @@ class NullLocalBridge(
     fun abort(id: String) {
         val job = synchronized(jobs) { jobs.remove(id) }
         job?.cancel()
+    }
+
+    /**
+     * Puts an image from the system clipboard into the page.
+     *
+     * The web clipboard API cannot do this inside a WebView: the platform exposes no
+     * clipboard-read resource for a page to request, so navigator.clipboard.read()
+     * is refused no matter what the page does. The clipboard is read here instead,
+     * on the app's own behalf, and the bytes are pushed to the page as an attachment.
+     *
+     * Returns "ok" when bytes were pushed, "empty" when the clipboard holds no image,
+     * or a code the page translates.
+     */
+    @JavascriptInterface
+    fun pasteImage(): String {
+        val clipboard = context.getSystemService(ClipboardManager::class.java)
+            ?: return "paste_unavailable"
+        if (!clipboard.hasPrimaryClip()) {
+            return "empty"
+        }
+        val item = clipboard.primaryClip?.getItemAt(0) ?: return "empty"
+        val uri = item.uri ?: return "empty"
+        val mime = context.contentResolver.getType(uri) ?: "image/*"
+        if (!mime.startsWith("image/")) {
+            return "empty"
+        }
+        return try {
+            val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            if (bytes == null || bytes.isEmpty()) {
+                return "empty"
+            }
+            val encoded = Base64.encodeToString(bytes, Base64.NO_WRAP)
+            main.post {
+                val script = buildString {
+                    append("window.__nullPaste&&window.__nullPaste(")
+                    append(JSONObject.quote(mime)).append(',')
+                    append(JSONObject.quote(encoded)).append(')')
+                }
+                webView.evaluateJavascript(script, null)
+            }
+            "ok"
+        } catch (error: Throwable) {
+            Log.w("NullWeb", error.javaClass.name, error)
+            "paste_failed"
+        }
     }
 
     @JavascriptInterface

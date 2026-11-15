@@ -94,6 +94,28 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
       showToast(error)
     }
   }
+  // 原生剪贴板把图片推回来时，走和选择器同一条附件管线
+  useEffect(() => {
+    if (!isLocal) {
+      return
+    }
+    const globals = window as unknown as {
+      __nullPaste?: (mime: string, base64: string) => void
+    }
+    globals.__nullPaste = (mime, base64) => {
+      const binary = atob(base64)
+      const bytes = new Uint8Array(binary.length)
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index)
+      }
+      const ext = mime.includes('png') ? 'png' : mime.includes('jpeg') ? 'jpg' : 'img'
+      acceptFiles([new File([bytes], `clipboard.${ext}`, { type: mime })])
+    }
+    return () => {
+      delete globals.__nullPaste
+    }
+  }, [isLocal])
+
   const retryFile = useCallback(
     (id: string) => {
       if (!useChatStore.getState().importingHistory && ensureApiKey()) {
@@ -202,6 +224,17 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
             if (files.length > 0) {
               event.preventDefault()
               acceptFiles(files)
+              return
+            }
+            // WebView 里网页读不到剪贴板图片：平台没有给页面可申请的 clipboard-read
+            // 资源，navigator.clipboard.read() 必定被拒。改由原生读，读到后推回来。
+            if (isLocal) {
+              const local = (
+                window as unknown as { NullLocal?: { pasteImage?: () => string } }
+              ).NullLocal
+              if (local?.pasteImage?.() === 'ok') {
+                event.preventDefault()
+              }
             }
           }}
         />
