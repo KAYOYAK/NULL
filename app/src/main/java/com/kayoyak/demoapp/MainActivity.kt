@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavKey
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kayoyak.demoapp.theme.DemoAppTheme
 
@@ -54,12 +55,17 @@ class MainActivity : ComponentActivity() {
    */
   private var now by mutableLongStateOf(SystemClock.elapsedRealtime())
 
+  /** 这次打开落在哪一页，取自启动它的 Intent（网页前端的入口）。 */
+  private var startKey by mutableStateOf<NavKey>(Chat)
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     enableEdgeToEdge()
     val container = (application as DemoApplication).container
     val settings = container.settingsStore.settings
+
+    startKey = startFrom(intent)
 
     // Which of the entry points this launch is, if any.
     acceptNewChat(intent, container)
@@ -123,7 +129,7 @@ class MainActivity : ComponentActivity() {
                 },
             )
           } else {
-            MainNavigation()
+            MainNavigation(start = startKey)
           }
         }
       }
@@ -205,5 +211,17 @@ class MainActivity : ComponentActivity() {
      * public action would let any app on the device clear the conversation.
      */
     const val ACTION_NEW_CHAT = "com.kayoyak.demoapp.NEW_CHAT"
+
+    /** Which native screen the front end asked for; absent means the chat screen. */
+    const val EXTRA_SCREEN = "screen"
+
+    private fun startFrom(intent: Intent?): NavKey =
+      when (intent?.getStringExtra(EXTRA_SCREEN)) {
+        "models" -> Models
+        "about" -> About
+        "settings" -> Settings
+        "history" -> History
+        else -> Chat
+      }
   }
 }

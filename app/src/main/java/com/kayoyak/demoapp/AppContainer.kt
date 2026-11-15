@@ -21,6 +21,12 @@ import com.kayoyak.demoapp.model.ModelImporter
 import com.kayoyak.demoapp.model.DeviceMemory
 import com.kayoyak.demoapp.model.ModelRegistry
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import com.kayoyak.demoapp.inference.EngineState
+import com.kayoyak.demoapp.inference.LocalModel
+import com.kayoyak.demoapp.inference.inferenceBackendNamed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
@@ -117,6 +123,46 @@ class AppContainer(context: Context) {
      * which on a two-core device is half the pool.
      */
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val engineLoadLock = Mutex()
+    private var engineStartRequested = false
+
+    /**
+     * Loads the installed model once per process, whoever opens the app first.
+     *
+     * The model used to be loaded by the chat screen, which was the only way in.
+     * The front end is the bundled page now, and a page cannot load a model before
+     * it renders: the page would report "no model" on every cold start. The
+     * Application owns the engine, so the Application starts it.
+     */
+    fun startEngineOnce() {
+        if (engineStartRequested) {
+            return
+        }
+        engineStartRequested = true
+        applicationScope.launch {
+            engineLoadLock.withLock {
+                val state = llmEngine.state.value
+                if (state is EngineState.Ready || state is EngineState.Loading) {
+                    return@withLock
+                }
+                val installed = modelStore.installedModels(modelRegistry.models.value)
+                val descriptor = installed.firstOrNull() ?: return@withLock
+                val settings = settingsStore.settings.value
+                llmEngine.load(
+                    model = LocalModel(
+                        id = descriptor.id,
+                        displayName = descriptor.displayName,
+                        file = modelStore.modelFile(descriptor),
+                    ),
+                    requested = inferenceBackendNamed(settings.backend),
+                    systemPrompt = settings.effectiveSystemPrompt,
+                    sampling = settings.samplingFor(descriptor.id),
+                )
+            }
+        }
+    }
+
 
     val downloadCoordinator: ModelDownloadCoordinator =
         ModelDownloadCoordinator(applicationScope, modelStore, modelDownloader::download)
@@ -222,6 +268,9 @@ class DemoApplication : Application() {
         super.onCreate()
         container = AppContainer(this)
         installCrashHandler()
+        // The front end is the page, and a page cannot load a model before it
+        // renders: the engine starts here so every entry finds it loading or ready.
+        container.startEngineOnce()
     }
 
     /**

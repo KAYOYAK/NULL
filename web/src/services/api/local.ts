@@ -20,6 +20,8 @@ import type { CreateMessageRequest, MessageParam, MessageStreamEvent } from './t
  *   kind ∈ {"start","text","done","error"}。
  */
 type NullLocalBridge = {
+  /** 打开原生界面：模型管理、关于这些 chat-demo 做不了的 */
+  openNative?: (screen: string) => boolean
   /** 系统的语音识别；返回 ok / voice_requesting / 错误码 */
   startListening?: () => string
   stopListening?: () => void
@@ -161,6 +163,21 @@ export const localListenStop = () => {
     bridge()?.stopListening?.()
   } catch {
     // 停止失败不影响调用方
+  }
+}
+
+
+/**
+ * Opens one of NULL's own screens, which stay native because the page cannot
+ * provide them: model downloads and verification, the licence list, the app lock.
+ */
+export const openNative = (
+  screen: 'models' | 'about' | 'settings' | 'history' | 'chat',
+): boolean => {
+  try {
+    return bridge()?.openNative?.(screen) ?? false
+  } catch {
+    return false
   }
 }
 

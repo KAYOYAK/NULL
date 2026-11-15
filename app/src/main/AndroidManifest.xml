@@ -33,13 +33,13 @@
         android:supportsRtl="true"
         android:windowSoftInputMode="adjustResize"
         android:theme="@style/Theme.DemoApp">
+        <!--
+             不是入口：前端是网页，这里是它下面 NULL 自己的界面（模型、历史、设置、关于）。
+             分享与快捷方式仍指向它，所以导出的属性保留。
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
 
             <!--
                 Text shared from another app.
@@ -73,7 +73,13 @@
         -->
         <activity
             android:name=".web.WebChatActivity"
-            android:exported="false" />
+            android:exported="true">
+            <!-- 前端就是这一页：启动进这里 -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

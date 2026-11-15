@@ -1,6 +1,7 @@
 package com.kayoyak.demoapp.web
 
 import android.content.ClipboardManager
+import android.content.Intent
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -11,6 +12,7 @@ import android.webkit.WebView
 import com.kayoyak.demoapp.AppContainer
 import com.kayoyak.demoapp.inference.EngineState
 import com.kayoyak.demoapp.inference.EngineTurn
+import com.kayoyak.demoapp.MainActivity
 import com.kayoyak.demoapp.inference.GenerationConfig
 import com.kayoyak.demoapp.inference.GenerationEvent
 import kotlinx.coroutines.CancellationException
@@ -119,6 +121,24 @@ class NullLocalBridge(
      * Returns "ok" when bytes were pushed, "empty" when the clipboard holds no image,
      * or a code the page translates.
      */
+    /**
+     * Opens one of NULL's own screens, which stay native because the page cannot
+     * provide them: model downloads and verification, the licences, the app lock.
+     */
+    @JavascriptInterface
+    fun openNative(screen: String): Boolean {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra(MainActivity.EXTRA_SCREEN, screen)
+        }
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (error: Throwable) {
+            Log.w("NullWeb", error.javaClass.name, error)
+            false
+        }
+    }
+
     @JavascriptInterface
     fun pasteImage(): String {
         val clipboard = context.getSystemService(ClipboardManager::class.java)

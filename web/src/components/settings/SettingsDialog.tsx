@@ -27,6 +27,7 @@ import {
   useSettings,
   type ThemePreference,
 } from '../../services/settings.js'
+import { openNative } from '../../services/api/local.js'
 import { useTranslate, type TranslationKey, type TranslationMessage } from '../../i18n/index.js'
 import { Button } from '../base/Button.js'
 import { Modal } from '../base/Modal.js'
@@ -107,7 +108,14 @@ const SettingsContent = () => {
             </>
           ) : (
             <>
-              {isLocal ? <LocalEngineSetting /> : <ApiKeyField editor={apiKeyEditor} />}
+              {isLocal ? (
+          <>
+            <LocalEngineSetting />
+            <NativeSurfaces />
+          </>
+        ) : (
+          <ApiKeyField editor={apiKeyEditor} />
+        )}
               <ImportHistory historyImport={historyImport} disabled={historyBusy} />
               <ExportHistory disabled={historyBusy} />
               <SettingCell
@@ -223,6 +231,40 @@ const LocalEngineSetting = () => {
       }
       action={null}
     />
+  )
+}
+
+
+/**
+ * The screens that stay native.
+ *
+ * chat-demo is the whole interface; what it cannot do is NULL's own: download and
+ * verify a model, read the licence list, set the app lock. Those open in Compose,
+ * over this page, and back returns here.
+ */
+const NativeSurfaces = () => {
+  const t = useTranslate()
+  return (
+    <>
+      <SettingCell
+        label={t('nativeModelsTitle')}
+        status={{ key: 'nativeModelsStatus' }}
+        action={
+          <Button variant="outlined" size="s" onClick={() => openNative('models')}>
+            {t('nativeOpen')}
+          </Button>
+        }
+      />
+      <SettingCell
+        label={t('nativeAboutTitle')}
+        status={{ key: 'nativeAboutStatus' }}
+        action={
+          <Button variant="outlined" size="s" onClick={() => openNative('about')}>
+            {t('nativeOpen')}
+          </Button>
+        }
+      />
+    </>
   )
 }
 

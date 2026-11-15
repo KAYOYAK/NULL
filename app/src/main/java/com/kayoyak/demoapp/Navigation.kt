@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -34,8 +35,9 @@ import com.kayoyak.demoapp.ui.models.ModelManagerScreen
 import com.kayoyak.demoapp.ui.models.ModelManagerViewModel
 
 @Composable
-fun MainNavigation() {
-  val backStack = rememberNavBackStack(Chat)
+fun MainNavigation(start: NavKey = Chat) {
+  // 从网页前端进原生界面时，栈从那一页开始：返回就退回对话。
+  val backStack = rememberNavBackStack(start)
 
   // The engine and the download coordinator belong to the Application, not to
   // this graph: a loaded model occupies hundreds of megabytes to several
