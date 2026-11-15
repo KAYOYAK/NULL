@@ -254,6 +254,32 @@ table: `history_in_use` (no longer has a state to describe), `history_unreadable
 None of them is a user-visible loss of an action; each is a sentence the old UI
 could print and this one cannot.
 
+### chat-demo's own features, against this build
+
+The audit above asks what `v1.1.2` could do. This is the other direction: what the
+vendored front end advertises, and what it does here. The rule was the same — keep
+everything the page can do, and be explicit about what it cannot.
+
+| chat-demo feature | Here |
+| --- | --- |
+| Multiple conversations, automatic titles, renaming, deletion | kept. Titles are **adapted**: the page sends `title: {enabled: true}` and takes the first line of the question (`titleFromPrompt`), because a model-written title would cost a second generation per conversation on the device. Recorded as F27 |
+| Edit a question, regenerate a reply, switch between versions | kept unchanged |
+| Streaming replies, stop generation, continue a stopped reply | kept; the bridge streams the runtime's own events |
+| Deep thinking toggle | **hidden in local mode** (F24). The runtime does expose `ThinkingConfig`, but the engine pins thinking off after measuring it: 254 replies, 951 characters of `thought`, no answer. Wiring the switch means wiring a token budget with it, and that has not been done |
+| Smart search, link reading, source citations | not portable: the local engine has no tools and the app has no network |
+| Upload, paste, drag-and-drop attachments | upload and paste kept; the local runtime takes images, so a non-image is refused with a reason. Drag-and-drop is desktop-only and does nothing on a phone |
+| Voice input, read a reply aloud, live audio spectrum | voice kept through the system recogniser; read-aloud kept through system TTS; the spectrum is **not** (F26) — the recogniser does not hand back PCM to draw |
+| Markdown, syntax highlighting, KaTeX, Mermaid | kept, and shipped inside the APK: the fonts, the CSS and both libraries are in `assets/web`, so they work with the radio off |
+| Simplified Chinese and English, light and dark, mobile layout | kept; the language defaults to Chinese here because this app is Chinese-first |
+| Location settings | **hidden in local mode** (F25). Location fed the cloud request; the local system prompt is consumed by `LlmEngine.load`, so there is no per-request path for it |
+| Chat history import and export | kept, routed through the encrypted store instead of IndexedDB |
+| API key entry | correctly absent: there is no server to key to |
+
+**The one place this build is behind chat-demo on purpose** is the title (F27) and
+the two controls that cannot act (F24, F25). Everything else either works as
+advertised or is a cloud capability that has no local meaning, which is the category
+the rule already excluded.
+
 **What the audit deliberately did not restore.** The "connection in use" guard on
 renaming (`history_in_use`) has no counterpart because the page renames through the
 store, which refuses while a reply is streaming. `history_unreadable` had no state

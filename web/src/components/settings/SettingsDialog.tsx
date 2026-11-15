@@ -104,7 +104,9 @@ const SettingsContent = () => {
               <LocaleSetting />
               {/* 朗读音色是云端音色列表，本机模式下用系统 TTS，故隐藏；位置信息是本地数据，照常可用 */}
               {isLocal ? null : <TtsVoiceSetting />}
-              <LocationSetting />
+              {/* 位置只用于云端请求的上下文；本机的系统提示词在引擎加载时用掉，
+            位置传不进去，所以这里不显示。 */}
+        {isLocal ? null : <LocationSetting />}
             </>
           ) : (
             <>

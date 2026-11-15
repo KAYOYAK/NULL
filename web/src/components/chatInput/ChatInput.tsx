@@ -320,6 +320,10 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
       <div className={styles.functionRow}>
         {/* 深度思考 / 智能搜索开关，tooltip 在按钮上方 */}
         <div ref={togglesRef} className={styles.toggles}>
+          {/* 本机的运行时支持 ThinkingConfig，但引擎按实测把它关着：开了之后
+              模型把预算花在思考上，答案常常是空的。接这个开关要连预算一起接，
+              在那之前不显示，比留一个点了没反应的按钮诚实。 */}
+          {isLocal ? null : (
           <Tooltip content={t('deactivatedThinkTooltip')}>
             <button
               type="button"
@@ -332,6 +336,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
               <span className={styles.toggleLabel}>{t('thinkingSwitch')}</span>
             </button>
           </Tooltip>
+          )}
           {/* 本机模式没有联网搜索 */}
           {isLocal ? null : (
           <Tooltip content={t('deactivatedSearchTooltip')}>
