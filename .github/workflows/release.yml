@@ -131,7 +131,13 @@ jobs:
             ${{ env.APK_PATH }}
             compliance/notices/litertlm-android-0.18.0-THIRD_PARTY_NOTICE.txt
           generate_release_notes: true
-          draft: true
+          # 直接发布，不留草稿。
+          #
+          # 之前这里是 draft: true，于是打完 tag 之后一边显示"发布成功"、一边在
+          # 仓库页面上看不到任何东西：v1.2.0 和 v1.2.1 都躺成草稿，只有 1.1.2
+          # 是手工发过的。tag 就是发布这个动作；需要先审阅的话，改用 prerelease
+          # 或在一个分支上跑 workflow_dispatch，而不是让"发布"默认什么都不发。
+          draft: false
           body: |
             Built from `${{ github.ref_name }}`.
 
