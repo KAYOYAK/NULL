@@ -23,6 +23,14 @@ data class ChatMessage(
     val role: MessageRole,
     val text: String,
     val createdAt: Long,
+    /**
+     * A thumbnail as a data URI, present only when the user's turn carried a picture.
+     *
+     * The thumbnail, not the original: history is kept forever, and one phone photo
+     * would grow a conversation by tens of megabytes. What the model received is a
+     * separate, larger encode made at send time.
+     */
+    val image: String? = null,
     val modelId: String? = null,
     /** Generation time for assistant messages. Displayed so quality has context. */
     val elapsedMillis: Long? = null,

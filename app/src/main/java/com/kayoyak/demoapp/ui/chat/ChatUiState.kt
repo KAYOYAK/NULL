@@ -13,6 +13,18 @@ import com.kayoyak.demoapp.model.ModelDescriptor
  * failed. See the project's UI/UX governance rules: cover the states the
  * operation has rather than only the happy path.
  */
+/**
+ * A picture waiting to go out with the next message.
+ *
+ * [bytes] is the encode the model receives (longest edge 1024); [thumbnail] is the
+ * one the history keeps (160). [name] comes from the picker and is only shown.
+ */
+class PendingImage(
+    val bytes: ByteArray,
+    val thumbnail: String,
+    val name: String,
+)
+
 data class ChatUiState(
     /** Persisted history, oldest first. */
     /**
@@ -37,6 +49,9 @@ data class ChatUiState(
 
     /** Non-null when the last generation failed. */
     val error: UiMessage? = null,
+
+    /** The picture for the next message; cleared once sent */
+    val pendingImage: PendingImage? = null,
 
     /** The model loaded in the engine, if any. */
     val modelId: String? = null,

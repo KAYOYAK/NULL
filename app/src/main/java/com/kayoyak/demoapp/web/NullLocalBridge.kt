@@ -12,6 +12,7 @@ import com.kayoyak.demoapp.AppContainer
 import com.kayoyak.demoapp.inference.EngineState
 import com.kayoyak.demoapp.inference.EngineTurn
 import com.kayoyak.demoapp.inference.GenerationConfig
+import com.kayoyak.demoapp.voice.VoiceInput
 import com.kayoyak.demoapp.inference.GenerationEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope

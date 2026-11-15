@@ -107,7 +107,22 @@ class ChatViewModel(
      */
     internal var pendingPreviousReply: ChatMessage? = null
 
-    /** Serialises model loading; see [loadModel]. */
+    /**
+ * Hangs a picked picture on the next message.
+ *
+ * No network or disk work happens here: both encodes were made by the caller, and
+ * this only puts them in state for send() to hand to the engine.
+ */
+fun attachImage(bytes: ByteArray, thumbnail: String, name: String) {
+    _state.value = _state.value.copy(pendingImage = PendingImage(bytes, thumbnail, name))
+}
+
+/** Drops the picture that was hanging on the next message. */
+fun clearImage() {
+    _state.value = _state.value.copy(pendingImage = null)
+}
+
+/** Serialises model loading; see [loadModel]. */
     internal val loadLock = Mutex()
 
     /**

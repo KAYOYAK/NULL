@@ -488,4 +488,17 @@
     <string name="chat_web_ui">网页界面（本机）</string>
     <string name="publisher_internvl">上海人工智能实验室</string>
     <string name="model_internvl3_5_2b">2B 视觉语言模型：除了聊天，还能读图——截图、票据、表格、手写都行。需要先切到这个模型，切换后要重新加载引擎。</string>
+    <string name="chat_attach_image">添加图片</string>
+    <string name="chat_image_remove">移除图片</string>
+    <string name="chat_image_attached">已附带图片</string>
+    <string name="chat_voice_input">语音输入</string>
+    <string name="chat_voice_stop">结束听写</string>
+    <string name="chat_voice_unavailable">这台设备没有语音识别器</string>
+    <string name="chat_voice_permission">需要麦克风权限才能听写</string>
+    <string name="chat_voice_needs_network">系统的离线识别不可用；这一轮没有联网，所以没有转写</string>
+    <string name="chat_voice_nothing_heard">没有听到声音</string>
+    <string name="chat_voice_failed">语音识别失败</string>
+    <string name="chat_more_actions">添加图片或语音输入</string>
+    <string name="chat_voice_listening">正在听…</string>
+    <string name="chat_image_unreadable">这张图片读不出来，换一张试试</string>
 </resources>

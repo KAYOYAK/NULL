@@ -1,5 +1,19 @@
 package com.kayoyak.demoapp.ui.chat
 
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import com.kayoyak.demoapp.voice.VoiceInput
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.material3.AssistChip
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import android.Manifest
 import com.kayoyak.demoapp.clockTime
 import com.kayoyak.demoapp.tokensPerSecond
 
@@ -123,6 +137,8 @@ fun ChatScreen(
         onSearchQueryChanged = viewModel::setSearchQuery,
         onSend = viewModel::send,
         onStop = viewModel::stop,
+        onAttachImage = viewModel::attachImage,
+        onClearImage = viewModel::clearImage,
         onNewChat = viewModel::newChat,
         onOpenModels = onOpenModels,
         onOpenHistory = onOpenHistory,
@@ -149,6 +165,9 @@ internal fun ChatContent(
     state: ChatUiState,
     onSend: (String) -> Unit,
     onStop: () -> Unit,
+    /** A picked picture: the bytes for the model, the thumbnail for history, its name */
+    onAttachImage: (ByteArray, String, String) -> Unit = { _, _, _ -> },
+    onClearImage: () -> Unit = {},
     onNewChat: () -> Unit,
     onOpenModels: () -> Unit,
     onOpenHistory: () -> Unit,
@@ -265,7 +284,7 @@ internal fun ChatContent(
                                     onOpenSettings()
                                 },
                             )
-                            // 网页前端（chat-demo 改造成全本地）：同一个引擎，换一套界面
+                            // The web front end (chat-demo, made local): the same engine, another UI
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.chat_web_ui)) },
                                 onClick = {
@@ -375,7 +394,7 @@ internal fun ChatContent(
                 )
             }
 
-            Composer(state, onSend, onStop, sharedText, onSharedTextTaken)
+            Composer(state, onSend, onStop, onAttachImage, onClearImage, sharedText, onSharedTextTaken)
         }
     }
 }
@@ -733,6 +752,23 @@ private fun MessageBubble(
             },
         ) {
             Column(Modifier.padding(12.dp)) {
+                // The picture the question was about. Kept as a thumbnail so a
+                // session with a dozen screenshots stays a text-sized file.
+                message.image?.let { dataUri ->
+                    val bitmap = remember(dataUri) { decodeDataUri(dataUri) }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .widthIn(max = 200.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                        )
+                    }
+                }
+
                 // Selectable, so a reply can be picked out and copied. Not a
                 // copy button: what someone wants is usually a sentence or a
                 // code block, not the whole message, and the platform's own
@@ -1049,6 +1085,8 @@ private fun Composer(
     state: ChatUiState,
     onSend: (String) -> Unit,
     onStop: () -> Unit,
+    onAttachImage: (ByteArray, String, String) -> Unit,
+    onClearImage: () -> Unit,
     sharedText: String?,
     onSharedTextTaken: () -> Unit,
 ) {
@@ -1071,48 +1109,223 @@ private fun Composer(
     val sendLabel = stringResource(
         if (state.generating) R.string.chat_stop else R.string.chat_send,
     )
+    val attachLabel = stringResource(R.string.chat_more_actions)
 
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(12.dp),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        OutlinedTextField(
-            value = draft,
-            onValueChange = { draft = it },
-            modifier = Modifier.weight(1f),
-            enabled = state.canSend,
-            placeholder = {
-                Text(stringResource(R.string.chat_message_hint))
-            },
-            maxLines = 4,
-        )
-        Spacer(Modifier.width(8.dp))
-        FilledIconButton(
-            onClick = {
-                if (state.generating) {
-                    onStop()
-                } else {
-                    val text = draft.trim()
-                    if (text.isNotEmpty()) {
-                        onSend(text)
-                        draft = ""
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var menuOpen by remember { mutableStateOf(false) }
+    var listening by remember { mutableStateOf(false) }
+    // One line under the field, for the things that can only be known now: the
+    // recognizer is missing, the mic was refused, the picture would not decode.
+    var notice by remember { mutableStateOf<Int?>(null) }
+
+    val voice = remember {
+        VoiceInput(context) { kind, text ->
+            when (kind) {
+                "ready" -> listening = true
+
+                "partial" -> draft = text
+
+                "final" -> {
+                    listening = false
+                    if (text.isNotBlank()) {
+                        draft = text
+                    } else {
+                        notice = R.string.chat_voice_nothing_heard
                     }
                 }
-            },
-            enabled = state.generating || (state.canSend && draft.isNotBlank()),
-            modifier = Modifier.semantics {
-                contentDescription = sendLabel
-            },
-        ) {
-            Icon(
-                if (state.generating) Icons.Filled.Close else Icons.AutoMirrored.Filled.Send,
-                contentDescription = null,
+
+                "error" -> {
+                    listening = false
+                    notice = when (text) {
+                        "voice_unavailable" -> R.string.chat_voice_unavailable
+                        "voice_permission" -> R.string.chat_voice_permission
+                        "voice_needs_network" -> R.string.chat_voice_needs_network
+                        "voice_nothing_heard" -> R.string.chat_voice_nothing_heard
+                        else -> R.string.chat_voice_failed
+                    }
+                }
+            }
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose { voice.dispose() }
+    }
+
+    val micPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            notice = voice.start().let { code ->
+                if (code == "ok") null else R.string.chat_voice_unavailable
+            }
+        } else {
+            notice = R.string.chat_voice_permission
+        }
+    }
+
+    // Both encodes are made off the main thread: decoding a phone photo is tens of
+    // milliseconds, and doing it here would drop frames.
+    val pickImage = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri == null) {
+            return@rememberLauncherForActivityResult
+        }
+        scope.launch {
+            val prepared = withContext(Dispatchers.IO) {
+                val bytes = ImagePrep.forModel(context, uri)
+                val thumbnail = ImagePrep.thumbnail(context, uri)
+                if (bytes != null && thumbnail != null) {
+                    Triple(bytes, thumbnail, uri.lastPathSegment ?: "")
+                } else {
+                    null
+                }
+            }
+            if (prepared == null) {
+                notice = R.string.chat_image_unreadable
+            } else {
+                notice = null
+                onAttachImage(prepared.first, prepared.second, prepared.third)
+            }
+        }
+    }
+
+    Column(Modifier.fillMaxWidth().padding(12.dp)) {
+        state.pendingImage?.let {
+            AssistChip(
+                onClick = onClearImage,
+                label = { Text(stringResource(R.string.chat_image_attached)) },
+                trailingIcon = {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.chat_image_remove),
+                    )
+                },
+                modifier = Modifier.padding(bottom = 6.dp),
             )
+        }
+
+        // Being heard needs saying: without this line, pressing the button gives
+        // no feedback at all until a transcript appears.
+        if (listening) {
+            Text(
+                stringResource(R.string.chat_voice_listening),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
+
+        notice?.let { message ->
+            Text(
+                stringResource(message),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
+
+        Row(verticalAlignment = Alignment.Bottom) {
+            Box {
+                IconButton(
+                    onClick = { menuOpen = true },
+                    enabled = state.canSend,
+                    modifier = Modifier.semantics {
+                        contentDescription = attachLabel
+                    },
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = null)
+                }
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.chat_attach_image)) },
+                        onClick = {
+                            menuOpen = false
+                            pickImage.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                            )
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                stringResource(
+                                    if (listening) R.string.chat_voice_stop else R.string.chat_voice_input,
+                                ),
+                            )
+                        },
+                        onClick = {
+                            menuOpen = false
+                            if (listening) {
+                                voice.stop()
+                                return@DropdownMenuItem
+                            }
+                            val granted = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.RECORD_AUDIO,
+                            ) == PackageManager.PERMISSION_GRANTED
+                            if (granted) {
+                                voice.start()
+                            } else {
+                                micPermission.launch(Manifest.permission.RECORD_AUDIO)
+                            }
+                        },
+                    )
+                }
+            }
+            Spacer(Modifier.width(4.dp))
+            OutlinedTextField(
+                value = draft,
+                onValueChange = { draft = it },
+                modifier = Modifier.weight(1f),
+                enabled = state.canSend,
+                placeholder = {
+                    Text(stringResource(R.string.chat_message_hint))
+                },
+                maxLines = 4,
+            )
+            Spacer(Modifier.width(8.dp))
+            FilledIconButton(
+                onClick = {
+                    if (state.generating) {
+                        onStop()
+                    } else {
+                        val text = draft.trim()
+                        if (text.isNotEmpty()) {
+                            onSend(text)
+                            draft = ""
+                            notice = null
+                        }
+                    }
+                },
+                enabled = state.generating || (state.canSend && draft.isNotBlank()),
+                modifier = Modifier.semantics {
+                    contentDescription = sendLabel
+                },
+            ) {
+                Icon(
+                    if (state.generating) Icons.Filled.Close else Icons.AutoMirrored.Filled.Send,
+                    contentDescription = null,
+                )
+            }
         }
     }
 }
 
 // ------------------------------------------------------------- previews ---
+
+/** Rebuilds the bubble thumbnail from a data URI; a failed decode shows nothing. */
+private fun decodeDataUri(dataUri: String): android.graphics.Bitmap? {
+    val comma = dataUri.indexOf(',')
+    if (comma < 0) {
+        return null
+    }
+    return runCatching {
+        val bytes = android.util.Base64.decode(dataUri.substring(comma + 1), android.util.Base64.DEFAULT)
+        android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }.getOrNull()
+}
 
 private fun sampleMessages() = listOf(
     ChatMessage("1", MessageRole.USER, "说一个颜色，一个词就行。", 1L),
