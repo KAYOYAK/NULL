@@ -25,6 +25,8 @@ type NullLocalBridge = {
   openNative?: (screen: string) => boolean
   /** 把一段文字交给系统分享 */
   share?: (text: string) => boolean
+  /** 已保存的提示词 */
+  prompts?: () => string
   /** 上下文占用与窗口 */
   context?: () => string
   /** 主题："system" | "light" | "dark" */
@@ -249,6 +251,23 @@ const readWindow = (): number | null => {
 /** Estimated cost of the turns the page would send. */
 export const estimateHistory = (turns: { text: string }[]): number =>
   turns.reduce((sum, turn) => sum + estimateTokens(turn.text), 0)
+
+
+/** The prompts saved in the app's settings, for the composer's menu. */
+export const listPrompts = (): { name: string; body: string }[] => {
+  try {
+    const raw = bridge()?.prompts?.()
+    if (!raw) {
+      return []
+    }
+    const parsed = JSON.parse(raw) as { prompts?: { name?: string; body?: string }[] }
+    return (parsed.prompts ?? [])
+      .filter((item) => typeof item.name === 'string' && typeof item.body === 'string')
+      .map((item) => ({ name: item.name as string, body: item.body as string }))
+  } catch {
+    return []
+  }
+}
 
 export async function* streamLocalMessage(
   body: CreateMessageRequest,

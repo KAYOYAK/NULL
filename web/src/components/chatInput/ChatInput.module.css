@@ -330,3 +330,17 @@
     cursor: not-allowed;
   }
 }
+
+/* 提示词：和输入框里的其他小控件同一档大小 */
+.promptChip {
+  align-self: flex-start;
+  margin: 0 0 6px 16px;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 10px;
+  background: var(--dsw-alias-fill-quaternary, rgb(243, 243, 243));
+  color: var(--dsw-alias-text-secondary, rgb(102, 102, 102));
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}

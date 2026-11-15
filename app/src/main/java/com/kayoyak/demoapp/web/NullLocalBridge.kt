@@ -165,6 +165,22 @@ class NullLocalBridge(
     }
 
     /**
+     * The saved prompts, as the settings screen stores them.
+     *
+     * They are edited natively -- the settings screen already has the add/delete
+     * UI -- and read here so the composer can offer them without a second copy of
+     * that editing surface.
+     */
+    @JavascriptInterface
+    fun prompts(): String {
+        val list = JSONArray()
+        container.settingsStore.settings.value.savedPrompts.forEach { prompt ->
+            list.put(JSONObject().put("name", prompt.name).put("body", prompt.body))
+        }
+        return JSONObject().put("prompts", list).toString()
+    }
+
+    /**
      * Hands a reply to the system share sheet.
      *
      * chat-demo copies; sharing a reply was the native chat screen's job, and that

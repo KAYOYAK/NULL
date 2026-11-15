@@ -1,5 +1,7 @@
 import clsx from 'clsx'
 import { ContextMeter } from './ContextMeter.js'
+import { Menu } from '../base/Menu.js'
+import { listPrompts } from '../../services/api/local.js'
 import { memo, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import {
   IconGlobeLanguageOutline14,
@@ -60,6 +62,38 @@ if (typeof window !== 'undefined') {
       }
     }
   }
+}
+
+
+/**
+ * The saved prompts, offered where they are used.
+ *
+ * A prompt library that lives only in a settings screen is a library nobody
+ * inserts from; the list is read from the bridge each time the menu opens, so an
+ * edit made in the native settings is visible here without a reload.
+ */
+const PromptPicker = ({ onPick }: { onPick: (body: string) => void }) => {
+  const t = useTranslate()
+  const prompts = listPrompts()
+  if (prompts.length === 0) {
+    return null
+  }
+  return (
+    <Menu
+      options={prompts.map((prompt) => ({
+        key: prompt.name,
+        label: prompt.name,
+        icon: <IconThinkOutline14 />,
+        onSelect: () => onPick(prompt.body),
+      }))}
+    >
+      {({ toggle }) => (
+        <button type="button" className={styles.promptChip} onClick={toggle}>
+          {t('prompts')}
+        </button>
+      )}
+    </Menu>
+  )
 }
 
 const Input = ({ sessionId }: { sessionId: string | null }) => {
@@ -230,6 +264,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
       }}
     >
       <DraftAttachments items={attachments} onRetry={retryFile} onRemove={removeFile} />
+      {isLocal ? <PromptPicker onPick={(body) => setText(text ? `${text}\n${body}` : body)} /> : null}
       {isLocal ? <ContextMeter /> : null}
       <div className={styles.textareaWrapper}>
         <textarea

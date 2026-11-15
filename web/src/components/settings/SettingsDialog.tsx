@@ -247,6 +247,15 @@ const NativeSurfaces = () => {
   return (
     <>
       <SettingCell
+        label={t('nativeSettingsTitle')}
+        status={{ key: 'nativeSettingsStatus' }}
+        action={
+          <Button variant="outlined" size="s" onClick={() => openNative('settings')}>
+            {t('nativeOpen')}
+          </Button>
+        }
+      />
+      <SettingCell
         label={t('nativeModelsTitle')}
         status={{ key: 'nativeModelsStatus' }}
         action={
