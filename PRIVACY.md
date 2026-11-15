@@ -82,6 +82,12 @@ Specifically:
 - Inference runs entirely on the device's own CPU, GPU or NPU.
 - Prompts, replies, and conversation history are never transmitted anywhere.
 - There is no sync, no backup to a server, and no remote configuration.
+- The chat interface is a web page, and it is **bundled in the app**: it is
+  loaded from `https://appassets.androidplatform.net/assets/web/`, an origin the
+  WebView answers from the APK itself, and every request it makes is intercepted
+  before a socket is opened. Its messages reach the model through an in-process
+  bridge, not through HTTP. `scripts/check-privacy.ps1` fails the build if that
+  page loads from anywhere else.
 
 To verify this yourself: download a model, enable airplane mode, and keep using
 the application. It will continue to work.

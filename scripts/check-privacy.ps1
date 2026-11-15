@@ -110,6 +110,8 @@ $appPkg = Get-AppPackage $ProjectDir
 $networkApiAllowed = @{
     "java/$appPkg/model/ModelDownloader.kt" = 'the only class that performs requests'
     "java/$appPkg/AppContainer.kt"          = 'constructs the single shared HTTP client'
+    "java/$appPkg/web/WebChatActivity.kt"   = 'renders a bundled page; asserts below that it loads nothing else'
+    "java/$appPkg/web/NullLocalBridge.kt"   = 'holds the WebView reference only to run evaluateJavascript'
 }
 
 # Substrings that indicate a network capability. Deliberately broad: a false
@@ -348,6 +350,22 @@ if ($offenders.Count -eq 0) {
     Write-Host '      no unexpected network access' -ForegroundColor Gray
 } else {
     Add-Violation "Network access outside the downloader: $($offenders -join ', ')" $mainSrc 'The network is used to download models and for nothing else. Move it, or change the contract deliberately.'
+}
+
+# The WebView is excused above only while it cannot reach the network, so the
+# excuse is checked rather than asserted: the only page it may load is the
+# bundled one, and every request it makes has to pass through the asset loader.
+$webActivity = Join-Path $mainSrc "java/$appPkg/web/WebChatActivity.kt"
+if (Test-Path -LiteralPath $webActivity) {
+    $activityText = Get-Content -LiteralPath $webActivity -Raw
+    $bundledOrigin = $activityText -match 'https://appassets\.androidplatform\.net/assets/web/index\.html'
+    $loadsOnlyThat = @([regex]::Matches($activityText, 'loadUrl\(')).Count -eq 1
+    $interceptsAll = ($activityText -match 'shouldInterceptRequest') -and ($activityText -match 'WebViewAssetLoader')
+    if ($bundledOrigin -and $loadsOnlyThat -and $interceptsAll) {
+        Write-Host '      OK    web/WebChatActivity.kt loads one bundled page and intercepts every request' -ForegroundColor Gray
+    } else {
+        Add-Violation 'The WebView is not confined to bundled assets' $webActivity 'It must load https://appassets.androidplatform.net/assets/web/index.html exactly once and route every request through WebViewAssetLoader.'
+    }
 }
 
 # ------------------------------------------------------------- report ---
