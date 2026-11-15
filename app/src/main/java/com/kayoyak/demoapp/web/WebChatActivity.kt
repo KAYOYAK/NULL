@@ -86,7 +86,7 @@ class WebChatActivity : ComponentActivity() {
                     true
                 } catch (t: Throwable) {
                     pendingFileCallback = null
-                    Log.w("NullWeb", "no activity can pick a file", t)
+                    Log.w("NullWeb", t.javaClass.name, t)
                     false
                 }
             }
