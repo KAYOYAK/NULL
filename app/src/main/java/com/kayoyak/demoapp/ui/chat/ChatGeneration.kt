@@ -65,15 +65,11 @@ fun ChatViewModel.send(text: String) {
     val prompt = text.trim()
     if (prompt.isEmpty() || _state.value.generating || !canAskTheModel()) return
 
-    // 图片只在这一次请求里发出去；历史里留的是小缩略图。
-    val attached = _state.value.pendingImage
-
     val userMessage = ChatMessage(
         id = UUID.randomUUID().toString(),
         role = MessageRole.USER,
         text = prompt,
         createdAt = clock(),
-        image = attached?.thumbnail,
     )
 
     // The first thing the user says names the conversation, so a later
@@ -86,12 +82,7 @@ fun ChatViewModel.send(text: String) {
     conversation = updated
     publish(updated)
 
-    _state.value = _state.value.copy(
-        generating = true,
-        streaming = "",
-        error = null,
-        pendingImage = null,
-    )
+    _state.value = _state.value.copy(generating = true, streaming = "", error = null)
 
     // The question's write lives in its own coroutine, not inside the
     // generation job. stop() and newChat() cancel that job, and a write
@@ -103,7 +94,7 @@ fun ChatViewModel.send(text: String) {
         // Awaited, so the promise above is true by the time the model is
         // asked anything.
         saveJob.join()
-        runGeneration(updated, prompt, attached?.bytes)
+        runGeneration(updated, prompt)
     }
 }
 
@@ -113,11 +104,7 @@ fun ChatViewModel.send(text: String) {
  * Shared by asking and asking again: the two differ in what precedes the
  * request, not in what happens once it is made.
  */
-internal suspend fun ChatViewModel.runGeneration(
-    into: Conversation,
-    prompt: String,
-    image: ByteArray? = null,
-) {
+internal suspend fun ChatViewModel.runGeneration(into: Conversation, prompt: String) {
     // Re-cut the history if this conversation has outgrown the window since it was
     // seeded.
     //
@@ -141,11 +128,7 @@ internal suspend fun ChatViewModel.runGeneration(
     var settled = false
 
     try {
-        engine.generate(
-            prompt = prompt,
-            config = generationConfig(),
-            images = image?.let { listOf(it) } ?: emptyList(),
-        ).collect { event ->
+        engine.generate(prompt, generationConfig()).collect { event ->
             when (event) {
                 is GenerationEvent.Token -> {
                     assembler.append(event.text)

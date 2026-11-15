@@ -1,4 +1,4 @@
-package com.kayoyak.demoapp.voice
+package com.kayoyak.demoapp.web
 
 import android.content.Context
 import android.content.Intent
