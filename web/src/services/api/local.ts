@@ -407,6 +407,18 @@ export async function* streamLocalMessage(
               stop_sequence: null,
               ...(title ? { title } : {}),
             },
+            // 本机引擎的实测数字：云端由服务端报 usage，这里由桥报。
+            ...(typeof data.tokenCount === 'number'
+              ? {
+                  usage: {
+                    input_tokens: 0,
+                    cache_creation_input_tokens: 0,
+                    cache_read_input_tokens: 0,
+                    output_tokens: data.tokenCount,
+                  },
+                }
+              : {}),
+            ...(typeof data.elapsedMillis === 'number' ? { elapsedMs: data.elapsedMillis } : {}),
           })
           queue.push({ type: 'message_stop' })
           finished = true

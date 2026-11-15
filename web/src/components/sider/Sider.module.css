@@ -245,3 +245,20 @@
     line-height: 22px;
   }
 }
+
+/* 会话搜索：标题与消息正文一起找（1.1.2 的历史页如此） */
+.search {
+  margin: 4px 12px 6px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: var(--dsw-alias-fill-quaternary, rgb(243, 243, 243));
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.search::placeholder {
+  color: var(--dsw-alias-text-tertiary, rgb(134, 134, 134));
+}

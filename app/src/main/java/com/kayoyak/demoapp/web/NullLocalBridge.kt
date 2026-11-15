@@ -432,6 +432,10 @@ class NullLocalBridge(
                             "done",
                             JSONObject().apply {
                                 put("stopReason", if (exhausted) "max_tokens" else "end_turn")
+                                // 每条回复的耗时与速度：1.1.2 的聊天页有这一行，
+                                // 它是判断"两个模型谁快"的唯一直接依据。
+                                put("elapsedMillis", event.elapsedMillis)
+                                put("tokenCount", event.tokenCount)
                                 event.contextTokens?.let { put("contextUsed", it) }
                                 contextWindow()?.let { put("contextWindow", it) }
                             },

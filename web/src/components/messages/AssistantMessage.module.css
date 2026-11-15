@@ -137,3 +137,13 @@
     --search-row-site-logo-color: var(--dsw-alias-interactive-bg-hover);
   }
 }
+
+/* 每条回复的耗时与速度；1.1.2 的聊天页有这一行 */
+.meta {
+  margin-right: auto;
+  padding-left: 4px;
+  color: var(--dsw-alias-text-tertiary, rgb(134, 134, 134));
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

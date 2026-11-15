@@ -4,6 +4,8 @@ import { useTranslate } from '../../i18n/index.js'
 import { IconPanelLeftOutline16, IconSettingsOutline16, NewChatIcon } from '../base/icons.js'
 import { setSiderCollapsed } from '../../services/settings.js'
 import { groupSessions } from '../../services/chat/sessionGroups.js'
+import { loadSession } from '../../services/chat/db.js'
+import { getVisibleMessages } from '../../services/chat/branches.js'
 import { newChat, removeSession, useChatStore } from '../../services/chat/store.js'
 import type { SessionSummary } from '../../services/chat/types.js'
 import { Button } from '../base/Button.js'
@@ -23,6 +25,45 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   const [now, setNow] = useState(Date.now)
   const groups = useMemo(() => groupSessions(sessions, now, t), [sessions, now, t])
   const [deleting, setDeleting] = useState<SessionSummary | null>(null)
+  // 搜索标题与消息正文：1.1.2 的历史页就是两处一起找，只搜标题会漏掉"那句话在哪个对话里"。
+  const [query, setQuery] = useState('')
+  const [matches, setMatches] = useState<SessionSummary[] | null>(null)
+  useEffect(() => {
+    const needle = query.trim().toLowerCase()
+    if (needle.length === 0) {
+      setMatches(null)
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      const found: SessionSummary[] = []
+      for (const summary of sessions) {
+        const full = await loadSession(summary.id)
+        if (cancelled) {
+          return
+        }
+        const inTitle = summary.title.toLowerCase().includes(needle)
+        const inBody =
+          full !== undefined &&
+          getVisibleMessages(full).some((message) =>
+            message.role === 'user'
+              ? message.content.toLowerCase().includes(needle)
+              : message.blocks.some(
+                  (block) => block.type === 'text' && block.text.toLowerCase().includes(needle)
+                )
+          )
+        if (inTitle || inBody) {
+          found.push(summary)
+        }
+      }
+      if (!cancelled) {
+        setMatches(found)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [query, sessions])
   const [deletePending, setDeletePending] = useState(false)
 
   useEffect(() => {
@@ -74,9 +115,32 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
         </span>
         {t('newChat')}
       </button>
+      <input
+        className={styles.search}
+        value={query}
+        placeholder={t('sessionSearchPlaceholder')}
+        onChange={(event) => setQuery(event.target.value)}
+      />
       <div className={styles.listWrap}>
         <div className={styles.list}>
-          {groups.map((group) => (
+          {matches !== null ? (
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                {matches.length === 0
+                  ? t('sessionSearchNone')
+                  : t('sessionSearchCount', { count: matches.length })}
+              </div>
+              {matches.map((session) => (
+                <SessionItem
+                  key={session.id}
+                  session={session}
+                  active={session.id === activeId}
+                  onDelete={() => setDeleting(session)}
+                />
+              ))}
+            </div>
+          ) : null}
+          {matches === null && groups.map((group) => (
             <div key={group.key} className={styles.section}>
               <div className={styles.sectionHeader}>{group.label}</div>
               {group.sessions.map((session) => (

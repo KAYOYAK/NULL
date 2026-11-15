@@ -130,6 +130,7 @@ export const applyEvent = (
         stopReason: event.delta.stop_reason,
         stopDetails: event.delta.stop_details,
         usage: event.usage ?? next.usage,
+        elapsedMs: event.elapsedMs ?? next.elapsedMs,
       }
     default:
       return next

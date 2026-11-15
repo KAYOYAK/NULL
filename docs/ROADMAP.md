@@ -162,6 +162,53 @@ paragraph at the foot of this file is about.
 
 ---
 
+---
+
+## The front-end swap (2026-11-15)
+
+The interface is now DeepSeek's `chat-demo`, vendored into `web/` and made local; the
+native Compose screens were cut back to what the page cannot provide (models,
+settings, about). This section records what that added, what it removed, and what the
+`v1.1.2` audit found missing afterwards.
+
+The rule the owner set: **where the two overlap, chat-demo's implementation stays;
+nothing a user could do before may stop being possible.** The audit compared this
+tree with the `v1.1.2` tag by two mechanical means — the Kotlin file set (32 files
+gone: exactly `ui/chat`, `ui/history`, `data/chat`, plus `SecureDelete`, which moved
+package) and `strings.xml` (380 to 259; the 128 that went were checked one by one
+against the page).
+
+| # | Feature | State | Grounded in |
+| --- | --- | --- | --- |
+| F1 | The chat interface is chat-demo, served from the APK, with replies streamed from the on-device engine over a JS bridge | done | Owner's call: 「DEEPSEEK 开源了一个 chat-demo…改造一下，改成全本地的」 |
+| F2 | The app opens the page; the native screens are reached from its settings, and back returns to the conversation | done | Same. A front end that is not the entry is not the front end. |
+| F3 | The engine loads at process start rather than from a screen | done | The page cannot load a model before it renders; it would report "no model" on every cold start |
+| F4 | Images: the page's paperclip hands bytes to a local vision model (InternVL3.5-2B) | done | chat-demo had attachments; the cloud Files API does not exist here |
+| F5 | Voice input through the system recogniser, `EXTRA_PREFER_OFFLINE`, permission asked at the moment of use | done | chat-demo recorded PCM for a cloud transcription call; there is no ASR model in this repository |
+| F6 | Read-aloud through the system `TextToSpeech` | done | chat-demo's read-aloud needed a cloud voice; the platform has one |
+| F7 | Session documents encrypted at rest: the page serialises, the bridge stores with `FileCipher`, delete goes through `SecureDelete` | done | IndexedDB is a plain store; the app already had a cipher for its own history |
+| F8 | Pin and archive conversations, as the native list had | done | `v1.1.2` audit: `history_pin`, `history_archive` had no counterpart |
+| F9 | Find a word inside a conversation, with a match count and scroll | done | `v1.1.2` audit: `chat_search_*` |
+| F10 | Delete one reply, or a question together with its replies | done | `v1.1.2` audit: `chat_delete_message`, `chat_delete_exchange` |
+| F11 | Share a whole conversation, and export it as Markdown with model and token count per reply | done | `v1.1.2` audit: `history_share`, `history_export_markdown` |
+| F12 | Context meter from the runtime's own count, and keeping a turn out of the trim | done | `v1.1.2` audit: `chat_context*`, `chat_keep*` |
+| F13 | Saved prompts, edited natively, insertable from the composer | done | `v1.1.2` audit: `settings_prompt*` |
+| F14 | The app lock, over the page | done | It lived on `MainActivity`; the page is the launcher now, so a lock there would have been a lock a launcher tap walks around |
+| F15 | Session-list search over titles **and** message text | done | `v1.1.2` audit: chat-demo has no session search at all |
+| F16 | Per-reply elapsed time and tokens per second | done | `v1.1.2` audit: `chat_rate`, `chat_first_token`; the bridge reports the runtime's own timing |
+| F17 | One theme preference read by both UIs; status bar icons and window colour follow it; opening a native screen cross-fades | done | The two sides read separate preferences and the native palette was still Material's purple |
+| F18 | Benchmark results kept, one per model, and compared on the model screen | done | New, not a restoration: the dialog's numbers were discarded, so a second model compared nothing. A failed run is reported now instead of returning null |
+| F19 | `scripts/check-readme.ps1`: the README's version table, screenshots and gate names are checked against the build, in the release workflow and on every PR | done | README had drifted: Kotlin 2.3.20 against 2.4.21, minSdk 24 against 26 |
+| F20 | A warning before loading a model the device may not fit | **not started** | Item 7 above is marked done and no longer is: its four strings went with the chat screen, `ModelManagerUiState.ramWarning` is a dead state, and nothing renders it. The model screen still draws the memory-need line, which is a statement, not a confirmation |
+| F21 | A long conversation reports how many turns were dropped from the context | **not started** | `v1.1.2` audit: `chat_context_trimmed`. The page trims at 60% of the window and says nothing |
+| F22 | Session rows show how many messages they hold | **not started** | `v1.1.2` audit: `history_message_count` |
+| F23 | Home-screen shortcut for a new conversation | **not started** | `v1.1.2` audit: `shortcut_new_chat_*`. The shortcut targeted `MainActivity`, which is no longer the entry; restoring it means a deep link into the page |
+
+**What the audit deliberately did not restore.** The "connection in use" guard on
+renaming (`history_in_use`) has no counterpart because the page renames through the
+store, which refuses while a reply is streaming. `history_unreadable` had no state
+left to describe once an unreadable document is simply absent from the list.
+
 ## How this file stays true
 
 A feature is **done** when its tests pass, the gates pass, and the reasoning it was

@@ -48,6 +48,17 @@ export const AssistantMessage = memo(function AssistantMessage({
 }) {
   const t = useTranslate()
   const kept = useKept((state) => state.kept.has(message.id))
+  // 1.1.2 的聊天页在每条回复下标出耗时与速度；这是判断两个模型谁快的直接依据。
+  const tokens = message.usage?.output_tokens ?? 0
+  const seconds = message.elapsedMs ? message.elapsedMs / 1000 : 0
+  const replyMeta =
+    tokens > 0 && seconds > 0
+      ? t('replyMeta', {
+          tokens,
+          seconds: seconds.toFixed(1),
+          rate: (tokens / seconds).toFixed(1),
+        })
+      : null
   const view = useReplyView(message, streaming)
   const panelEntry = useSearchPanel((state) => state.entry)
   const notice = streaming ? null : describeReply(message)
@@ -146,6 +157,7 @@ export const AssistantMessage = memo(function AssistantMessage({
         <div className={styles.bottom}>
           <BranchSwitcher versions={versions} disabled={busy} onSelect={onSelectVersion} />
           <div className={clsx(styles.actions, isLast && styles.alwaysShow)}>
+            {replyMeta ? <span className={styles.meta}>{replyMeta}</span> : null}
             {copyText ? <CopyButton text={copyText} /> : null}
             {hasLocalEngine() ? (
               <IconButton

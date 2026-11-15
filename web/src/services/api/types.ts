@@ -229,6 +229,8 @@ export type MessageStreamEvent =
         title?: string
       }
       usage?: MessageUsage
+      /** 本机引擎上报的这条回复总耗时；云端没有这个概念 */
+      elapsedMs?: number
     }
   | { type: 'message_stop' }
   | { type: 'ping' }
