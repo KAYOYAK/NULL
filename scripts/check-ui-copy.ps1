@@ -30,7 +30,6 @@ $problems = [System.Collections.Generic.List[string]]::new()
 # directory" would also skip the user-facing part of it, which is the mistake this
 # gate exists to catch.
 $developerFacing = @(
-    "$appPkg/data/chat/ChatStore.kt",
     "$appPkg/model/ModelStore.kt",
     "$appPkg/model/ModelDownloader.kt",
     "$appPkg/model/ModelImporter.kt",
@@ -46,7 +45,6 @@ $developerFacing = @(
     # A lookup table of language keywords, matched against a code block. The one
     # entry that reads as an English word is `None`, which is Python. Nothing here
     # is rendered; the table decides what colour a word is.
-    "$appPkg/ui/chat/SyntaxHighlighter.kt",
     # The validate() problem list is thrown at build time and never rendered.
     "$appPkg/model/ModelCatalogue.kt",
     # The runtime's own status codes and library names, kept verbatim so that
