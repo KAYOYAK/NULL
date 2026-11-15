@@ -242,7 +242,8 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
             )}
         </div>
         <div className={styles.right}>
-          {isLocal ? null : (
+          {/* 本机模式也保留：麦克风交给系统识别器，页面只收文本 */}
+          {false ? null : (
           <VoiceButton
               status={voice.status}
               disabled={!voice.available}

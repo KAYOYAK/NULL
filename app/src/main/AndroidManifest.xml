@@ -15,6 +15,13 @@
     -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--
+        语音输入：系统的 SpeechRecognizer 直接读麦克风，本应用不接触音频。
+        请求时带 EXTRA_PREFER_OFFLINE，设备有离线识别器时全程不离机；
+        没有时系统会报错，页面照实显示，不会退回云端识别。
+    -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:name=".DemoApplication"
         android:allowBackup="false"

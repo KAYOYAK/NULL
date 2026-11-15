@@ -13,6 +13,7 @@ The application declares one permission itself, and two more arrive from a libra
 | Permission | Why |
 | --- | --- |
 | `INTERNET` | To download model files. Nothing else. |
+| `RECORD_AUDIO` | Voice input only, through the system recognizer. The request asks for on-device recognition; a device without one fails rather than uploading the audio. |
 
 `androidx.biometric`, which backs the app lock, contributes two during the
 manifest merge. Neither can read a fingerprint and neither returns data to the

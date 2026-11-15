@@ -13,6 +13,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
+import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -33,6 +34,14 @@ class WebChatActivity : ComponentActivity() {
     private var bridge: NullLocalBridge? = null
     /** 页面正在等一次文件选择；WebView 只给一次回调，用过就清 */
     private var pendingFileCallback: ValueCallback<Array<Uri>>? = null
+
+    /** 页面按下麦克风时才申请：一进入口就弹权限是最快让人卸载应用的方式 */
+    private val micPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                bridge?.startListeningNow()
+            }
+        }
 
     private val pickFile =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -93,6 +102,9 @@ class WebChatActivity : ComponentActivity() {
         }
 
         val localBridge = NullLocalBridge(this, container, webView)
+        localBridge.requestMicrophone = {
+            micPermission.launch(Manifest.permission.RECORD_AUDIO)
+        }
         bridge = localBridge
         webView.addJavascriptInterface(localBridge, "NullLocal")
 

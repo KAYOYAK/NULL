@@ -20,6 +20,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import java.util.Locale
 import java.util.UUID
 
@@ -48,6 +51,13 @@ class NullLocalBridge(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val jobs = HashMap<String, Job>()
     private val main = Handler(Looper.getMainLooper())
+
+    /** 页面按下麦克风时调用；Activity 注入，负责在缺权限时发起系统授权 */
+    var requestMicrophone: (() -> Unit)? = null
+
+    private val voice = VoiceInput(context) { kind, text ->
+        emitVoice(kind, text)
+    }
 
     /** The platform's own speech engine: read-aloud runs on the device, offline. */
     private var tts: TextToSpeech? = null
@@ -96,6 +106,25 @@ class NullLocalBridge(
     }
 
     @JavascriptInterface
+    fun startListening(): String {
+        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+            PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            main.post { requestMicrophone?.invoke() }
+            return "voice_requesting"
+        }
+        return voice.start()
+    }
+
+    /** 授权回来后由 Activity 调它，真正开始听 */
+    fun startListeningNow(): String = voice.start()
+
+    @JavascriptInterface
+    fun stopListening() {
+        voice.stop()
+    }
+
+    @JavascriptInterface
     fun speak(text: String): String {
         if (text.isBlank()) {
             return "ok"
@@ -116,6 +145,7 @@ class NullLocalBridge(
     /** Stops in-flight turns when the page goes away, so the bridge does not
      * outlive its WebView through an engine callback. */
     fun dispose() {
+        main.post { voice.dispose() }
         main.post { tts?.shutdown() }
         tts = null
         synchronized(jobs) {
@@ -123,6 +153,16 @@ class NullLocalBridge(
             jobs.clear()
         }
         scope.cancel()
+    }
+
+    /** 语音事件没有请求 id：麦克风一次只有一个，页面按全局通道收 */
+    private fun emitVoice(kind: String, text: String) {
+        val script = buildString {
+            append("window.__nullVoice&&window.__nullVoice(")
+            append(JSONObject.quote(kind)).append(',')
+            append(JSONObject.quote(text)).append(')')
+        }
+        main.post { webView.evaluateJavascript(script, null) }
     }
 
     private fun emit(id: String, kind: String, payload: JSONObject = JSONObject()) {

@@ -54,6 +54,11 @@ if (-not (Test-Path $sourceManifest)) { throw "AndroidManifest.xml not found und
 # defend in review.
 $approvedPermissions = @{
     'android.permission.INTERNET' = 'Required to download model weights. Never used for anything else.'
+    # 语音输入。The system recognizer reads the microphone itself; this app never
+    # holds audio, and the request asks for on-device recognition
+    # (EXTRA_PREFER_OFFLINE). A device without an offline recognizer reports an
+    # error instead of uploading the microphone.
+    'android.permission.RECORD_AUDIO' = 'Voice input through the system recognizer; audio never reaches this process.'
 
     # The app lock, declared by androidx.biometric.
     #

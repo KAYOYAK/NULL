@@ -1,9 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { TranslationMessage } from '../../i18n/index.js'
+import type { TranslationKey, TranslationMessage } from '../../i18n/index.js'
 import { transcribe } from '../../services/api/speech.js'
+import { hasLocalEngine, localListenStart, localListenStop } from '../../services/api/local.js'
 import { startRecording, type Recording } from '../../services/speech/recorder.js'
 import { useSettings } from '../../services/settings.js'
 import { showToast } from '../base/toastState.js'
+
+
+/** 系统识别器的返回码 → 界面文案（本机模式专用，云端那条路用自己的错误类型） */
+const VOICE_ERROR_KEYS: Record<string, TranslationKey> = {
+  voice_unavailable: 'voiceLocalUnavailable',
+  voice_permission: 'voiceLocalPermission',
+  voice_needs_network: 'voiceLocalNeedsNetwork',
+  voice_nothing_heard: 'voiceLocalNothingHeard',
+  voice_failed: 'voiceLocalFailed',
+}
 
 export type VoiceInputStatus = 'idle' | 'recording' | 'transcribing'
 
@@ -96,7 +107,30 @@ export const useVoiceInput = (onText: (text: string) => void) => {
     }
   }, [cancel])
 
+  const toggleLocal = useCallback(() => {
+    if (status === 'recording') {
+      localListenStop()
+      setStatus('transcribing')
+      return
+    }
+    if (status === 'transcribing') {
+      localListenStop()
+      setStatus('idle')
+      return
+    }
+    const code = localListenStart()
+    if (code === 'ok' || code === 'voice_requesting') {
+      setStatus('recording')
+      return
+    }
+    showToast({ key: VOICE_ERROR_KEYS[code] ?? 'voiceLocalFailed' })
+  }, [status])
+
   const toggle = useCallback(async () => {
+    if (hasLocalEngine()) {
+      toggleLocal()
+      return
+    }
     if (!AVAILABLE) {
       return
     }
@@ -128,7 +162,7 @@ export const useVoiceInput = (onText: (text: string) => void) => {
         showToast(describeRecordingError(error))
       }
     }
-  }, [status, finish, cancel])
+  }, [status, finish, cancel, toggleLocal])
 
   useEffect(() => {
     if (status !== 'recording') {
@@ -142,6 +176,40 @@ export const useVoiceInput = (onText: (text: string) => void) => {
     }, 500)
     return () => clearInterval(timer)
   }, [status])
+
+  // 本机引擎：麦克风交给系统的识别器，页面只收文本。
+  // 录音与频谱属于云端那条路（它要上传 PCM），本机模式下没有等价物。
+  useEffect(() => {
+    if (!hasLocalEngine()) {
+      return
+    }
+    const globals = window as unknown as {
+      __nullVoice?: (kind: string, text: string) => void
+    }
+    globals.__nullVoice = (kind, text) => {
+      if (kind === 'partial') {
+        return
+      }
+      if (kind === 'final') {
+        setStatus('idle')
+        if (text.trim()) {
+          onTextRef.current(text.trim())
+        } else {
+          showToast({ key: 'voiceInputEmpty' })
+        }
+        return
+      }
+      if (kind === 'error') {
+        setStatus('idle')
+        showToast({ key: VOICE_ERROR_KEYS[text] ?? 'voiceLocalFailed' })
+      }
+    }
+    return () => {
+      localListenStop()
+      delete globals.__nullVoice
+    }
+  }, [])
+
 
   useEffect(() => cancelOperation, [cancelOperation])
 

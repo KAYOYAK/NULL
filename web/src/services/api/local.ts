@@ -20,6 +20,9 @@ import type { CreateMessageRequest, MessageParam, MessageStreamEvent } from './t
  *   kind ∈ {"start","text","done","error"}。
  */
 type NullLocalBridge = {
+  /** 系统的语音识别；返回 ok / voice_requesting / 错误码 */
+  startListening?: () => string
+  stopListening?: () => void
   available?: () => string
   probe?: () => string
   start?: (request: string) => string
@@ -36,6 +39,11 @@ type Emit = (id: string, kind: string, payload: string) => void
  * 在这套前端属于 i18n，两边各译各的，不互相搬运文案。
  */
 const LOCAL_ERROR_KEYS: Record<string, TranslationKey> = {
+  voice_unavailable: 'voiceLocalUnavailable',
+  voice_permission: 'voiceLocalPermission',
+  voice_needs_network: 'voiceLocalNeedsNetwork',
+  voice_nothing_heard: 'voiceLocalNothingHeard',
+  voice_failed: 'voiceLocalFailed',
   loading: 'localModelLoading',
   missing_model: 'localModelMissing',
   tts_unavailable: 'localTtsUnavailable',
@@ -132,6 +140,28 @@ const collectImageBlocks = async (messages: MessageParam[]): Promise<string[]> =
     }
   }
   return out
+}
+
+
+/** 本机语音输入的入口；返回的码由 localErrorText 翻成界面语言 */
+export const localListenStart = (): string => {
+  const local = bridge()
+  if (!local?.startListening) {
+    return 'voice_unavailable'
+  }
+  try {
+    return local.startListening()
+  } catch (error) {
+    return error instanceof Error ? 'voice_failed' : 'voice_failed'
+  }
+}
+
+export const localListenStop = () => {
+  try {
+    bridge()?.stopListening?.()
+  } catch {
+    // 停止失败不影响调用方
+  }
 }
 
 export async function* streamLocalMessage(
