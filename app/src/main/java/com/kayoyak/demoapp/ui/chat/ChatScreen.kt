@@ -69,6 +69,8 @@ import androidx.compose.ui.res.stringResource
 import com.kayoyak.demoapp.R
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import com.kayoyak.demoapp.web.WebChatActivity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
@@ -170,6 +172,7 @@ internal fun ChatContent(
     onSharedTextTaken: () -> Unit = {},
 ) {
     var menuOpen by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     // Whether the in-conversation search is showing. Screen state, not the
     // ViewModel's: it says whether a field is on screen, not what the app knows.
     var searchOpen by remember { mutableStateOf(false) }
@@ -260,6 +263,16 @@ internal fun ChatContent(
                                 onClick = {
                                     menuOpen = false
                                     onOpenSettings()
+                                },
+                            )
+                            // 网页前端（chat-demo 改造成全本地）：同一个引擎，换一套界面
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.chat_web_ui)) },
+                                onClick = {
+                                    menuOpen = false
+                                    context.startActivity(
+                                        Intent(context, WebChatActivity::class.java)
+                                    )
                                 },
                             )
                         }

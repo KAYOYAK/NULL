@@ -185,6 +185,8 @@ dependencies {
 
   // Core Android dependencies
   implementation(libs.androidx.core.ktx)
+  // 网页前端：WebViewAssetLoader 把 assets 挂在 https://appassets.androidplatform.net
+  implementation(libs.androidx.webkit)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
     // For the app lock. The platform has BiometricPrompt from API 28; this covers

@@ -485,4 +485,5 @@
     <string name="sampling_balanced_hint">出厂设置，也是这几个小模型发布方推荐的值。</string>
     <string name="sampling_varied">放得开</string>
     <string name="sampling_varied_hint">措辞更活泼，适合写东西。小模型用这个可能变得不连贯。</string>
+    <string name="chat_web_ui">网页界面（本机）</string>
 </resources>

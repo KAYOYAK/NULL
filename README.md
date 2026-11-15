@@ -12,47 +12,52 @@
 
 <p align="center"><img src="docs/shots/icon.png" width="88" alt="NULL 图标"></p>
 
-### 对话
+### 对话（网页前端）
 
-| 一轮完整的回答 | 消息操作 | 深色 |
+| 新对话 | 一轮回答 |
+| --- | --- |
+| ![新对话](docs/shots/web-empty.png) | ![一轮回答](docs/shots/web-chat.png) |
+
+![从输入到回答的一轮](docs/demo-web.gif)
+
+这套界面来自 DeepSeek 开源的 [chat-demo](https://github.com/deepseek-ai/chat-demo)（MIT），
+在 `web/` 里改造为全本地：回复由设备上已经加载的 LiteRT-LM 引擎生成，前端不发一个网络请求。
+
+改动只有三处，其余 UI 代码原样保留：传输层（`web/src/services/api/local.ts`）把请求交给
+Android 侧的 JS 桥，桥把引擎的增量翻译回与云端完全相同的流式事件；配色从蓝色改成黑白灰；
+界面默认中文。云端能力按「能本地就本地」处理——朗读改用系统 TTS，位置信息本来就是本地数据；
+语音输入、联网搜索与附件上传在本机模式下不出现（前两个需要云端服务，附件需要解析 PDF/图片）。
+
+### 管理界面（Compose）
+
+| 对话 | 消息操作 | 深色 |
 | --- | --- | --- |
-| ![一轮完整的回答](docs/shots/01-chat.png) | ![消息操作](docs/shots/06-message-actions.png) | ![深色](docs/shots/11-chat-dark.png) |
+| ![对话](docs/shots/01-chat.png) | ![消息操作](docs/shots/06-message-actions.png) | ![深色](docs/shots/11-chat-dark.png) |
 
-### 模型
-
-| 模型管理：已安装 / 目录 / 说法方式 | 摘要校验：和发布时一致 |
+| 模型管理 | 摘要校验 |
 | --- | --- |
 | ![模型管理](docs/shots/02-models.png) | ![摘要校验](docs/shots/07-verify.png) |
 
-### 聊天记录
-
-| 本机上的对话 | 搜索 | 删除 |
+| 聊天记录 | 搜索 | 删除 |
 | --- | --- | --- |
 | ![聊天记录](docs/shots/03-history.png) | ![搜索](docs/shots/08-history-search.png) | ![删除确认](docs/shots/09-history-delete.png) |
 
-### 设置
-
-| 外观 · 字号 · 消息时间 · 应用锁 | 运行在 / 提示词 / 回答 | 深色设置 |
+| 设置 | 运行在 / 提示词 / 回答 | 深色设置 |
 | --- | --- | --- |
 | ![设置](docs/shots/04-settings.png) | ![运行在](docs/shots/10-settings-sampler.png) | ![深色设置](docs/shots/12-settings-dark.png) |
 
-### 关于
-
-| 原则、签名、免责声明 |
+| 关于 |
 | --- |
 | ![关于](docs/shots/05-about.png) |
 
-### 动图
-
-![从输入到回答的完整一轮](docs/demo.gif)
-
-> 截图与动图取自仓库自身的 debug 构建（「关于」页因此显示开发版签名），跑在 Android 16 x86_64 模拟器上。
-> 模拟器不提供 OpenCL，GPU delegate 初始化失败后自动退回 CPU —— 设置页那句「现在运行在处理器上」与日志
-> （`OpenCL not supported on this platform` → `Failed to initialize WebGPU environment: INTERNAL: No adapters found`）
-> 说的是同一件事。卡片上的「9.091 秒 · 1.8 tok/s」是那台模拟器的实测值；真机快得多，这个数字不代表上限。
+> 所有截图取自仓库自身的 debug 构建（「关于」页因此显示开发版签名），跑在 Android 16 x86_64
+> 模拟器上。模拟器不提供 OpenCL，GPU delegate 初始化失败后自动退回 CPU —— 设置页那句
+> 「现在运行在处理器上」与日志（`OpenCL not supported on this platform` →
+> `Failed to initialize WebGPU environment: INTERNAL: No adapters found`）说的是同一件事。
+> 聊天截图里的「9.091 秒 · 1.8 tok/s」是那台模拟器的实测值；真机快得多，这个数字不代表上限。
 >
-> 两张没拍到：**跑分**（点下去约 7 秒后回到空闲，既没有结果对话框也没有失败提示，原因未查明）和
-> **应用锁的锁屏**（开关打开后重启，界面停在模型加载态，没能验证到锁屏）。功能在代码里，只是这台机器上没取到真实的图。
+> 两张没拍到：**跑分**（点下去约 7 秒后回到空闲，既没有结果对话框也没有失败提示，原因未查明）
+> 和**应用锁的锁屏**（开关打开后重启，界面停在模型加载态，没能验证到锁屏）。
 
 ## 环境要求
 

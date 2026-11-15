@@ -57,6 +57,16 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
+
+        <!--
+            网页前端：chat-demo 改造成全本地后的壳。
+
+            不导出、没有 intent-filter：它只从应用内的「更多」菜单进入，和现有
+            的 Compose 界面共用同一个已加载的引擎。页面本身不发网络请求。
+        -->
+        <activity
+            android:name=".web.WebChatActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
