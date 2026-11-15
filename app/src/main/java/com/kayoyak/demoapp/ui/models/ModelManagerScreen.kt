@@ -491,12 +491,12 @@ private fun BenchmarkComparison(records: List<com.kayoyak.demoapp.data.models.Be
             Spacer(Modifier.height(8.dp))
             fastestFirst.forEach { record ->
                 Text(
+                    // 只报运行时确实给出的数字。首 token 与预填在这台设备上拿不到，
+                    // 写成「未知 ms」比不写更难读，所以那两项在弹窗里另行显示。
                     stringResource(
                         R.string.models_benchmark_compare_row,
                         record.displayName,
                         record.decodeTokensPerSecond?.let { "%.1f".format(it) }
-                            ?: stringResource(R.string.models_benchmark_unknown),
-                        record.timeToFirstTokenMillis?.toString()
                             ?: stringResource(R.string.models_benchmark_unknown),
                     ),
                     style = MaterialTheme.typography.bodyMedium,

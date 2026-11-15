@@ -264,7 +264,7 @@ class ModelManagerViewModel(
                     // A fixed length and no sampling surprises: this measures speed.
                     GenerationConfig(maxTokens = BENCHMARK_TOKENS, temperature = 0.0),
                 ).collect { event ->
-                    if (event is GenerationEvent.Done) timing = event.timing
+                    if (event is GenerationEvent.Done) timing = timingFrom(event)
                 }
                 timing
             } catch (e: CancellationException) {
@@ -299,6 +299,28 @@ class ModelManagerViewModel(
     }
 
     /** No measurement has run, or the last one is being dismissed. */
+    /**
+     * The timing for one finished run.
+     *
+     * The runtime does not always report `GenerationTiming`: on this build the
+     * benchmark's run finished with a null one. Returning null there threw the whole
+     * measurement away, which is why pressing 跑分 produced nothing at all.
+     *
+     * The Done event always carries the reply's token count and elapsed time, so the
+     * decode rate can be derived from those. First-token and prefill stay null:
+     * deriving them would be inventing a number, and the dialog renders a missing
+     * value as missing.
+     */
+    private fun timingFrom(event: GenerationEvent.Done): GenerationTiming =
+        event.timing ?: GenerationTiming(
+            decodeTokens = event.tokenCount,
+            decodeTokensPerSecond = if (event.elapsedMillis > 0L) {
+                event.tokenCount * 1000.0 / event.elapsedMillis
+            } else {
+                null
+            },
+        )
+
     fun dismissBenchmark() {
         benchmark.value = null
     }

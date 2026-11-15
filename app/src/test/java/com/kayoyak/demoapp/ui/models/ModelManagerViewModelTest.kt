@@ -869,6 +869,21 @@ class ModelManagerViewModelTest {
 
         assertNull(vm.state.value.verification)
     }
+
+    @Test
+    fun `a run whose runtime timing is missing still records a measurement`() = runBlocking {
+        // This is what the device does: Done arrives, `timing` is null, and the
+        // benchmark used to return null -- so the dialog never opened, no record was
+        // written, and the button behaved as if unwired. The Done event's own token
+        // count and elapsed time are enough for the decode rate.
+        val engine = FakeEngine()
+        engine.nullTimingDone = true
+        val vm = benchmarkVm(engine)
+
+        val measured = awaitState(vm, { it.benchmark != null }) { vm.runBenchmark(first, "hi") }
+
+        assertNotNull("a missing runtime timing must not discard the run", measured)
+    }
 }
 
 /**
@@ -912,6 +927,15 @@ private class FakeEngine : com.kayoyak.demoapp.inference.LlmEngine {
     var timing: com.kayoyak.demoapp.inference.GenerationTiming? = null
 
     /**
+     * Emit a Done whose `timing` is null anyway.
+     *
+     * The bundled runtime does this: the reply finishes with a token count and an
+     * elapsed time but no `GenerationTiming`, and the benchmark used to throw the
+     * whole measurement away because of it.
+     */
+    var nullTimingDone = false
+
+    /**
      * Holds [generate] open until the test releases it.
      *
      * Null means "answer immediately". A non-null gate is what makes a running
@@ -949,6 +973,17 @@ private class FakeEngine : com.kayoyak.demoapp.inference.LlmEngine {
         configs += config
         return kotlinx.coroutines.flow.flow {
             gate?.await()
+            if (nullTimingDone) {
+                emit(
+                    com.kayoyak.demoapp.inference.GenerationEvent.Done(
+                        fullText = "benchmark",
+                        elapsedMillis = 2_000,
+                        tokenCount = 10,
+                        timing = null,
+                    ),
+                )
+                return@flow
+            }
             val t = timing ?: return@flow
             emit(com.kayoyak.demoapp.inference.GenerationEvent.Done("benchmark", 1, 1, timing = t))
         }
