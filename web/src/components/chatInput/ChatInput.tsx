@@ -41,6 +41,26 @@ export const ChatInput = memo(function ChatInput({ sessionId }: { sessionId: str
   return <Input key={sessionId === null ? 'new' : `session:${sessionId}`} sessionId={sessionId} />
 })
 
+/** 每个挂载中的输入框按会话登记；分享进来的文字同时写给它们。 */
+const shareTargets = new Map<string | null, (text: string) => void>()
+
+type ShareWindow = Window & {
+  __nullShareHookInstalled?: boolean
+  __nullSharedText?: (text: string) => void
+}
+
+if (typeof window !== 'undefined') {
+  const host = window as ShareWindow
+  if (!host.__nullShareHookInstalled) {
+    host.__nullShareHookInstalled = true
+    host.__nullSharedText = (text: string) => {
+      for (const setText of shareTargets.values()) {
+        setText(text)
+      }
+    }
+  }
+}
+
 const Input = ({ sessionId }: { sessionId: string | null }) => {
   const t = useTranslate()
   const draft = useDrafts((state) => state.drafts.get(sessionId) ?? EMPTY_DRAFT)
@@ -115,6 +135,20 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
       delete globals.__nullPaste
     }
   }, [isLocal])
+
+  // 别的应用分享进来的文字：落进输入框，发不发仍是用户的事。
+  //
+  // The page keeps one composer per session and the welcome screen has its own,
+  // so a single global hook cannot know which draft key is on screen. Every mounted
+  // composer registers here and the shared text goes to all of them: the visible
+  // box shows it, and a session's draft that is not on screen simply carries the
+  // text until it is opened. Nothing is sent either way.
+  useEffect(() => {
+    shareTargets.set(sessionId, setText)
+    return () => {
+      shareTargets.delete(sessionId)
+    }
+  })
 
   const retryFile = useCallback(
     (id: string) => {

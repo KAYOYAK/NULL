@@ -139,6 +139,23 @@ class NullLocalBridge(
         }
     }
 
+    /**
+     * Hands text from another app to the page's composer.
+     *
+     * The hook is registered by React, which mounts after the document loads, so a
+     * single evaluation can land on a page that has the DOM but not the listener.
+     * Poll briefly instead of dropping the text.
+     */
+    fun pushSharedText(text: String) {
+        val script = buildString {
+            append("(function(value){var tries=0;(function deliver(){")
+            append("if(window.__nullSharedText){window.__nullSharedText(value);}")
+            append("else if(tries++<40){setTimeout(deliver,100);}})();})(")
+            append(JSONObject.quote(text)).append(')')
+        }
+        main.post { webView.evaluateJavascript(script, null) }
+    }
+
     @JavascriptInterface
     fun pasteImage(): String {
         val clipboard = context.getSystemService(ClipboardManager::class.java)

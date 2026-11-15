@@ -1,7 +1,11 @@
 package com.kayoyak.demoapp.web
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
+import android.os.SystemClock
 import android.os.Bundle
 import android.view.ViewGroup
 import android.util.Log
@@ -13,11 +17,26 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kayoyak.demoapp.diagnostics.AppLock
+import com.kayoyak.demoapp.theme.DemoAppTheme
+import com.kayoyak.demoapp.ui.lock.DeviceAuth
+import com.kayoyak.demoapp.ui.lock.LockScreen
 import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewAssetLoader
+import android.widget.FrameLayout
 import com.kayoyak.demoapp.DemoApplication
 
 /**
@@ -32,6 +51,21 @@ import com.kayoyak.demoapp.DemoApplication
 class WebChatActivity : ComponentActivity() {
 
     private var bridge: NullLocalBridge? = null
+
+    /**
+     * The same lock the native screens use, on the page.
+     *
+     * The page is the entry now, so a lock that only covered the Compose screens
+     * would be a lock the launcher walks around: tapping the icon would land in an
+     * unlocked conversation.
+     */
+    private var leftAt by mutableStateOf<Long?>(null)
+    private var unlockedAt by mutableStateOf<Long?>(null)
+    private lateinit var lockOverlay: ComposeView
+
+    /** Text shared in from another app, held until the page can take it. */
+    private var pendingShare: String? = null
+    private var pageLoaded = false
     /** 页面正在等一次文件选择；WebView 只给一次回调，用过就清 */
     private var pendingFileCallback: ValueCallback<Array<Uri>>? = null
 
@@ -72,6 +106,15 @@ class WebChatActivity : ComponentActivity() {
                 view: WebView,
                 request: WebResourceRequest,
             ): WebResourceResponse? = assetLoader.shouldInterceptRequest(request.url)
+
+            override fun onPageFinished(view: WebView, url: String?) {
+                super.onPageFinished(view, url)
+                pageLoaded = true
+                pendingShare?.let { text ->
+                    pendingShare = null
+                    bridge?.pushSharedText(text)
+                }
+            }
         }
 
         // Page errors must be visible in logcat; a blank screen with no console is unauditable
@@ -127,8 +170,93 @@ class WebChatActivity : ComponentActivity() {
             insets
         }
 
-        setContentView(webView)
+        val root = FrameLayout(this)
+        root.addView(
+            webView,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+            ),
+        )
+
+        lockOverlay = ComposeView(this).apply {
+            setBackgroundColor(Color.TRANSPARENT)
+            setContent {
+                val settings = container.settingsStore.settings.collectAsStateWithLifecycle().value
+                DemoAppTheme(theme = settings.chosenTheme, fontScale = settings.fontScale) {
+                    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                        LockScreen(
+                            onUnlocked = {
+                                unlockedAt = SystemClock.elapsedRealtime()
+                                leftAt = null
+                                syncLock()
+                            },
+                        )
+                    }
+                }
+            }
+        }
+        root.addView(lockOverlay)
+
+        setContentView(root)
+        syncLock()
+        takeShare(intent)
         webView.loadUrl("https://appassets.androidplatform.net/assets/web/index.html")
+    }
+
+    /**
+     * Shows or hides the lock over the page.
+     *
+     * Called on create, on resume and after an unlock, because the answer depends
+     * on how long the app was away -- which only `onStart` knows.
+     */
+    private fun syncLock() {
+        val settings = (application as DemoApplication).container.settingsStore.settings.value
+        val locked = AppLock.isLocked(
+            enabled = settings.lockEnabled,
+            leftAt = leftAt,
+            authenticatedAt = unlockedAt,
+            now = SystemClock.elapsedRealtime(),
+            canAuthenticate = DeviceAuth.canAuthenticate(this),
+        )
+        lockOverlay.visibility = if (locked) android.view.View.VISIBLE else android.view.View.GONE
+    }
+
+    /** Text shared in from another app, delivered once the page can accept it. */
+    private fun takeShare(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_SEND) {
+            return
+        }
+        if (intent.type?.startsWith("text/") != true) {
+            return
+        }
+        val text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()?.trim()
+        if (text.isNullOrEmpty()) {
+            return
+        }
+        if (pageLoaded) {
+            bridge?.pushSharedText(text)
+        } else {
+            pendingShare = text
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        takeShare(intent)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        syncLock()
+    }
+
+    override fun onStop() {
+        // Recorded here rather than on pause: the lock timeout is about being away,
+        // and a permission dialog should not count as leaving.
+        leftAt = SystemClock.elapsedRealtime()
+        super.onStop()
     }
 
     override fun onDestroy() {
