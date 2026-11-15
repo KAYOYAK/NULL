@@ -61,6 +61,10 @@ class NullLocalBridge(
     /** Settings writes are suspending; the page calls them from a click handler. */
     private val settingsScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    /** What the last finished turn occupied, for the page's meter. */
+    @Volatile
+    private var lastContextTokens: Int? = null
+
     /** 页面按下麦克风时调用；Activity 注入，负责在缺权限时发起系统授权 */
     var requestMicrophone: (() -> Unit)? = null
 
@@ -375,10 +379,18 @@ class NullLocalBridge(
 
                     is GenerationEvent.Done -> {
                         val exhausted = event.tokenCount >= maxTokens
+                        // The runtime's own count, not an estimate: the meter exists to
+                        // show what the model actually holds, and a number computed from
+                        // character counts would disagree with the engine by a third.
+                        lastContextTokens = event.contextTokens
                         emit(
                             id,
                             "done",
-                            JSONObject().put("stopReason", if (exhausted) "max_tokens" else "end_turn"),
+                            JSONObject().apply {
+                                put("stopReason", if (exhausted) "max_tokens" else "end_turn")
+                                event.contextTokens?.let { put("contextUsed", it) }
+                                contextWindow()?.let { put("contextWindow", it) }
+                            },
                         )
                     }
 
@@ -394,6 +406,22 @@ class NullLocalBridge(
             synchronized(jobs) { jobs.remove(id) }
         }
     }
+
+    /**
+     * The window and what the last turn left in it.
+     *
+     * The page shows this, and uses the window to decide what history to send: the
+     * engine holds a conversation per model, but what it is asked to continue is
+     * whatever the page hands it on each turn.
+     */
+    @JavascriptInterface
+    fun context(): String = JSONObject().apply {
+        lastContextTokens?.let { put("used", it) }
+        contextWindow()?.let { put("window", it) }
+    }.toString()
+
+    private fun contextWindow(): Int? =
+        (container.llmEngine.state.value as? EngineState.Ready)?.contextWindow
 
     /** A code the page translates, plus the engine's own words as a detail field. */
     private fun failure(code: String, detail: String? = null): JSONObject =

@@ -1,0 +1,32 @@
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 16px 0;
+  color: var(--dsw-alias-text-tertiary, rgb(134, 134, 134));
+  font-size: 11px;
+}
+
+.track {
+  flex: 1;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--dsw-alias-fill-quaternary, rgb(231, 231, 231));
+  overflow: hidden;
+}
+
+.fill,
+.fillHigh {
+  height: 100%;
+  background: currentColor;
+  transition: width 200ms ease;
+}
+
+.fillHigh {
+  background: rgb(214, 116, 40);
+}
+
+.label {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}

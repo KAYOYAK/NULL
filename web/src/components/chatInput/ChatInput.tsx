@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { ContextMeter } from './ContextMeter.js'
 import { memo, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import {
   IconGlobeLanguageOutline14,
@@ -229,6 +230,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
       }}
     >
       <DraftAttachments items={attachments} onRetry={retryFile} onRemove={removeFile} />
+      {isLocal ? <ContextMeter /> : null}
       <div className={styles.textareaWrapper}>
         <textarea
           ref={textareaRef}

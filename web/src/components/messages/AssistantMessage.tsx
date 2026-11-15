@@ -1,11 +1,12 @@
 import { useTranslate } from '../../i18n/index.js'
 import clsx from 'clsx'
 import { memo } from 'react'
-import { IconRefreshOutline16, IconWarningOutline16, IconShareOutline16 } from '../base/icons.js'
+import { IconRefreshOutline16, IconWarningOutline16, IconShareOutline16, IconKeepOutline16 } from '../base/icons.js'
 import { describeReply } from '../../services/chat/describe.js'
 import { canContinueReply } from '../../services/chat/reply.js'
 import { continueReply, regenerateReply } from '../../services/chat/store.js'
 import { hasLocalEngine, shareText } from '../../services/api/local.js'
+import { toggleKept, useKept } from '../../services/context.js'
 import { stopReadAloud } from '../../services/speech/readAloud.js'
 import type { AssistantMessage as AssistantMessageType } from '../../services/chat/types.js'
 import { openSettings } from '../settings/settingsDialogState.js'
@@ -45,6 +46,7 @@ export const AssistantMessage = memo(function AssistantMessage({
   onSelectVersion: SelectMessageVersion
 }) {
   const t = useTranslate()
+  const kept = useKept((state) => state.kept.has(message.id))
   const view = useReplyView(message, streaming)
   const panelEntry = useSearchPanel((state) => state.entry)
   const notice = streaming ? null : describeReply(message)
@@ -144,6 +146,14 @@ export const AssistantMessage = memo(function AssistantMessage({
           <BranchSwitcher versions={versions} disabled={busy} onSelect={onSelectVersion} />
           <div className={clsx(styles.actions, isLast && styles.alwaysShow)}>
             {copyText ? <CopyButton text={copyText} /> : null}
+            {hasLocalEngine() ? (
+              <IconButton
+                icon={<IconKeepOutline16 />}
+                tooltip={kept ? t('kept') : t('keep')}
+                tooltipPlacement="bottom"
+                onClick={() => toggleKept(message.id)}
+              />
+            ) : null}
             {copyText && hasLocalEngine() ? (
               <IconButton
                 icon={<IconShareOutline16 />}
