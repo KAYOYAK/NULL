@@ -1,0 +1,52 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--dsw-alias-separator-secondary, rgb(231, 231, 231));
+  background: var(--dsw-alias-bg-primary, #fff);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+}
+
+.count {
+  color: var(--dsw-alias-text-tertiary, rgb(134, 134, 134));
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.step {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* 命中的消息描边；当前这一条再重一点，长对话里才看得见跳到了哪 */
+.hit {
+  outline: 1px solid var(--dsw-alias-border-secondary, rgba(0, 0, 0, 0.16));
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.current {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}

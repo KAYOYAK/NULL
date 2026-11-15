@@ -2,7 +2,12 @@ import clsx from 'clsx'
 import { memo, useState } from 'react'
 import { useTranslate } from '../../i18n/index.js'
 import { IconEditOutline16, IconEllipsisOutline16, IconTrashOutline16 } from '../base/icons.js'
-import { renameSession, selectSession } from '../../services/chat/store.js'
+import {
+  renameSession,
+  selectSession,
+  setSessionArchived,
+  setSessionPinned,
+} from '../../services/chat/store.js'
 import { loadSession } from '../../services/chat/db.js'
 import { sessionAsMarkdown, sessionAsText } from '../../services/chat/share.js'
 import { hasLocalEngine, shareText } from '../../services/api/local.js'
@@ -62,6 +67,21 @@ export const SessionItem = memo(function SessionItem({
       <div className={styles.action} onClick={(event) => event.stopPropagation()}>
         <Menu
           options={[
+            {
+              key: 'pin',
+              label: session.pinnedAt === undefined ? t('sessionItemMenuPin') : t('sessionItemMenuUnpin'),
+              icon: <IconEditOutline16 />,
+              onSelect: () => setSessionPinned(session.id, session.pinnedAt === undefined),
+            },
+            {
+              key: 'archive',
+              label:
+                session.archivedAt === undefined
+                  ? t('sessionItemMenuArchive')
+                  : t('sessionItemMenuUnarchive'),
+              icon: <IconEditOutline16 />,
+              onSelect: () => setSessionArchived(session.id, session.archivedAt === undefined),
+            },
             ...(hasLocalEngine()
               ? [
                   {

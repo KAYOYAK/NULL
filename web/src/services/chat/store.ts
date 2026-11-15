@@ -676,6 +676,25 @@ export const editMessage = (sessionId: string, messageId: string, content: strin
 }
 
 /** Deletes a message and its subtree, then writes the session out. */
+/** Pins a session to the top, or unpins it. */
+export const setSessionPinned = (sessionId: string, pinned: boolean) => {
+  updateSession(sessionId, (session) => ({
+    ...session,
+    pinnedAt: pinned ? Date.now() : undefined,
+  }))
+  persist(sessionId)
+}
+
+/** Moves a session out of the date groups and into the archived one. */
+export const setSessionArchived = (sessionId: string, archived: boolean) => {
+  updateSession(sessionId, (session) => ({
+    ...session,
+    archivedAt: archived ? Date.now() : undefined,
+    pinnedAt: archived ? undefined : session.pinnedAt,
+  }))
+  persist(sessionId)
+}
+
 export const removeMessage = (sessionId: string, messageId: string): boolean => {
   if (get().importingHistory || deletingSessions.has(sessionId)) {
     return false

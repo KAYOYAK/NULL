@@ -114,10 +114,17 @@ export type Session = {
   messages: Message[]
   /** undefined 表示线性消息列表；null 表示空会话。 */
   rootMessageId?: string | null
+  /** 置顶时间；有值就排在列表最前面。 */
+  pinnedAt?: number
+  /** 归档时间；有值的会话从常规分组里移出，收在列表末尾。 */
+  archivedAt?: number
 }
 
 /** 会话列表元数据；消息只在打开会话时加载。 */
-export type SessionSummary = Pick<Session, 'id' | 'title' | 'createdAt' | 'updatedAt'>
+export type SessionSummary = Pick<
+  Session,
+  'id' | 'title' | 'createdAt' | 'updatedAt' | 'pinnedAt' | 'archivedAt'
+>
 
 /** 显式提取字段，避免将完整会话的消息带进列表。 */
 export const toSessionSummary = (session: SessionSummary): SessionSummary => ({
@@ -125,4 +132,6 @@ export const toSessionSummary = (session: SessionSummary): SessionSummary => ({
   title: session.title,
   createdAt: session.createdAt,
   updatedAt: session.updatedAt,
+  ...(session.pinnedAt === undefined ? {} : { pinnedAt: session.pinnedAt }),
+  ...(session.archivedAt === undefined ? {} : { archivedAt: session.archivedAt }),
 })

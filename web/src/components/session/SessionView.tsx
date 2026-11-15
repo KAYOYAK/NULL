@@ -1,9 +1,14 @@
 import clsx from 'clsx'
+import { useState } from 'react'
 import { useIsMobile } from '../../app/viewport.js'
 import { useTranslate } from '../../i18n/index.js'
 import type { Session } from '../../services/chat/types.js'
 import { ChatInput } from '../chatInput/ChatInput.js'
 import { MessageList } from '../messages/MessageList.js'
+import { ConversationSearch } from './ConversationSearch.js'
+import { getVisibleMessages } from '../../services/chat/branches.js'
+import { IconSearchOutline16 } from '../base/icons.js'
+import { IconButton } from '../base/IconButton.js'
 import { MobileHeader } from './MobileHeader.js'
 import styles from './SessionView.module.css'
 
@@ -20,6 +25,9 @@ export const SessionView = ({
   const t = useTranslate()
   const isMobile = useIsMobile()
   const title = session.title || t('untitledChat')
+  // 查找的是这段对话里能读到的那些消息，也就是当前选中的分支。
+  const [searching, setSearching] = useState(false)
+  const visible = getVisibleMessages(session)
   return (
     <div className={styles.view}>
       {isMobile ? (
@@ -29,8 +37,16 @@ export const SessionView = ({
           <div className={clsx(styles.title, siderCollapsed && styles.withCollapsedSider)}>
             {title}
           </div>
+          <IconButton
+            icon={<IconSearchOutline16 />}
+            tooltip={t('conversationSearchOpen')}
+            onClick={() => setSearching(true)}
+          />
         </div>
       )}
+      {searching ? (
+        <ConversationSearch messages={visible} onClose={() => setSearching(false)} />
+      ) : null}
       <MessageList
         session={session}
         streaming={streaming}

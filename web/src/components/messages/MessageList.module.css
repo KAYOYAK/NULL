@@ -35,3 +35,8 @@
   margin: 0 auto;
   padding-bottom: 24px;
 }
+
+/* 每条消息的锚点：搜索需要它才能滚动到某一条，并为命中描边 */
+.anchor {
+  display: block;
+}
