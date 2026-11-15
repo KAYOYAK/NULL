@@ -327,6 +327,25 @@ export const updateStagingFileTypes = async (types: ReadonlyMap<string, string>)
  */
 export const commitStaging = async (): Promise<SessionSummary[]> => {
   const summaries: SessionSummary[] = []
+  // 本机模式：导入的会话必须走同一条加密路径——否则"备份导入"会绕过加密，
+  // 把明文写回 IndexedDB。暂存区只是搬运，最终落盘仍由桥完成。
+  if (hasLocalEngine()) {
+    const db = await getDB()
+    for (const session of await db.getAll('sessionsStaging')) {
+      if (session?.id && historyWrite(session.id, JSON.stringify(session))) {
+        summaries.push(toSessionSummary(session))
+      }
+    }
+    const files = await db.getAll('filesStaging')
+    if (files.length > 0) {
+      await putFiles('files', files)
+    }
+    const clearTx = db.transaction(['sessionsStaging', 'filesStaging'], 'readwrite')
+    await clearTx.objectStore('sessionsStaging').clear()
+    await clearTx.objectStore('filesStaging').clear()
+    await clearTx.done
+    return summaries
+  }
   const tx = (await getDB()).transaction(
     ['sessions', 'sessionSummaries', 'files', 'sessionsStaging', 'filesStaging'],
     'readwrite'
