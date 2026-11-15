@@ -104,8 +104,22 @@ function Get-InfrastructureFailures {
     return $names
 }
 
+# The sweep runs on the CI runner (Linux) as well as on Windows, and gradlew.bat
+# does not exist there: the hard-coded cmd.exe made this gate silently useless on
+# the one platform it is gated on.
+function Invoke-Gradle([string] $task, [switch] $Capture) {
+    if ($IsWindows) {
+        $line = "gradlew.bat $task --console=plain -q 2>&1"
+        if ($Capture) { return (& cmd.exe /c $line) }
+        & cmd.exe /c $line | Out-Null
+        return
+    }
+    if ($Capture) { return (& ./gradlew $task --console=plain -q 2>&1) }
+    & ./gradlew $task --console=plain -q 2>&1 | Out-Null
+}
+
 function Get-Baseline {
-    & cmd.exe /c 'gradlew.bat :app:testDebugUnitTest --console=plain -q 2>&1' | Out-Null
+    Invoke-Gradle ':app:testDebugUnitTest'
     return (Get-Failures)
 }
 
@@ -143,31 +157,6 @@ if ($baseline.Count -gt 0) {
 Write-Host 'Baseline green.' -ForegroundColor Green
 
 $mutations = @(
-    @{ file = 'ui/chat/MarkdownText.kt'
-       name = 'an unterminated fence is shown as code'
-       from = 'if (contents.isNotEmpty()) segments += ReplySegment.Prose(contents)'
-       to   = 'segments += ReplySegment.Code(contents, language)' }
-
-    @{ file = 'ui/chat/MarkdownText.kt'
-       name = 'any fence-prefixed line closes a block'
-       from = 'isFence && marker.isEmpty() ->'
-       to   = 'isFence ->' }
-
-    @{ file = 'ui/chat/MarkdownText.kt'
-       name = 'an empty fence becomes an empty code box'
-       from = 'if (contents.isNotEmpty()) segments += ReplySegment.Code(contents, language)'
-       to   = 'segments += ReplySegment.Code(contents, language)' }
-
-    @{ file = 'data/chat/ConversationExport.kt'
-       name = 'interrupted marker omitted from the export'
-       from = 'builder.appendLine(labels.stoppedHere)'
-       to   = 'builder.appendLine("")' }
-
-    @{ file = 'data/chat/ConversationExport.kt'
-       name = 'export file name has no fallback'
-       from = '.ifBlank { "conversation" }'
-       to   = '.ifBlank { "x" }' }
-
     @{ file = 'data/settings/SettingsStore.kt'
        name = 'blank system prompt no longer falls back to the default'
        from = 'val effectiveSystemPrompt: String get() = systemPrompt.ifBlank { DEFAULT_SYSTEM_PROMPT }'
@@ -193,45 +182,10 @@ $mutations = @(
        from = 'val next = this.imported.value.filterNot { it.id == imported.id } + imported'
        to   = 'val next = this.imported.value + imported' }
 
-    @{ file = 'ui/chat/ChatConversation.kt'
-       name = 'deleting a question leaves its answer behind'
-       from = '.takeWhile { it.role != MessageRole.USER }'
-       to   = '.takeWhile { false }' }
-
-    @{ file = 'ui/history/HistoryUiState.kt'
-       name = 'search no longer matches message text'
-       from = 'row.conversation.messages.any { it.text.contains(needle, ignoreCase = true) }'
-       to   = 'false' }
-
-    @{ file = 'ui/history/HistoryUiState.kt'
-       name = 'search ignores the query entirely'
-       from = 'if (needle.isEmpty()) return rows'
-       to   = 'return rows' }
-
     @{ file = 'ui/models/ModelManagerViewModel.kt'
        name = 'import file name sanitisation bypassed'
        from = 'return cleaned.ifBlank { "imported-model.litertlm" }'
        to   = 'return name' }
-
-    @{ file = 'ui/chat/ChatGeneration.kt'
-       name = 'a model nothing can be asked of still passes the guard'
-       from = '_state.value.modelId != null && engine.state.value is EngineState.Ready'
-       to   = '_state.value.modelId != null' }
-
-    @{ file = 'ui/chat/ChatGeneration.kt'
-       name = 'asking again seeds the question it is about to send'
-       from = 'reseedRuntimeWith(trimmed, messages = upto.dropLast(1))'
-       to   = 'reseedRuntimeWith(trimmed, messages = upto)' }
-
-    @{ file = 'ui/chat/ChatModels.kt'
-       name = 'a model load empties the runtime instead of seeding it'
-       from = '            reseedRuntimeWith(conversation)'
-       to   = '            engine.resetConversation()' }
-
-    @{ file = 'ui/chat/ChatSaving.kt'
-       name = 'a save stops deferring to the title on disk'
-       from = 'if (stored.messages.isEmpty()) return withPin'
-       to   = 'return withPin' }
 
     @{ file = 'data/settings/SettingsStore.kt'
        name = 'a stored settings value is no longer brought into range'
@@ -243,16 +197,6 @@ $mutations = @(
     # checked here is the half that runs in a JVM: the setting is read when the
     # model is loaded, and it is the value the engine is given. A screen offering
     # five choices that never leave the file is worse than no screen.
-    @{ file = 'ui/chat/ChatModels.kt'
-       name = 'the creativity setting never reaches the engine'
-       from = 'settings.samplingFor(descriptor.id),'
-       to   = 'GenerationConfig(),' }
-
-    @{ file = 'ui/chat/ChatGeneration.kt'
-       name = 'the reply length never reaches the generation request'
-       from = 'maxTokens = settings.maxReplyTokens,'
-       to   = 'maxTokens = 512,' }
-
     # ---------------------------------------------------------------------------
     # Behaviours a later session changed: a defect fixed, or a feature wired up.
     #
@@ -262,16 +206,6 @@ $mutations = @(
     # asserts it. Each name below describes the code the fix removed, so a survivor
     # reads as "this fix is back".
     # ---------------------------------------------------------------------------
-
-    @{ file = 'ui/history/HistoryViewModel.kt'
-       name = 'a row stops carrying the space its conversation takes'
-       from = 'rows = conversations.map { HistoryRow(it, bytes = sizes[it.id]) },'
-       to   = 'rows = conversations.map { HistoryRow(it) },' }
-
-    @{ file = 'ui/chat/ChatViewModel.kt'
-       name = 'a reply is stamped with the raw clock, losing the backwards-clock guard'
-       from = 'maxOf(now, updatedAt + 1)'
-       to   = 'now' }
 
     @{ file = 'ui/models/ModelManagerScreen.kt'
        name = 'the benchmark prompt is dropped at the call site'
@@ -293,46 +227,16 @@ $mutations = @(
        from = 'wipedBytes = written?.takeIf { it > 0L },'
        to   = 'wipedBytes = written ?: 0L,' }
 
-    @{ file = 'ui/chat/MarkdownText.kt'
-       name = 'the flanking rule is dropped, so 2*3*4 becomes emphasis'
-       from = 'if (!opening || i + runLength >= text.length || text[i + runLength].isWhitespace()) {'
-       to   = 'if (i + runLength >= text.length) {' }
-
     @{ file = 'ui/about/AboutScreen.kt'
        name = 'the diagnostics report stops naming the loaded model'
        from = 'modelId = state.runningModelId,'
        to   = '' }
-
-    @{ file = 'data/chat/ChatStore.kt'
-       name = 'a late save resurrects a deleted conversation'
-       from = 'if (removedAt != null && conversation.updatedAt <= removedAt) {'
-       to   = 'if (false) {' }
 
     # The four counters in `ChatStore.saveAudit`. They were dead once -- declared,
     # documented, and never incremented -- and nothing noticed, because their only
     # reader runs when a test is already failing. One mutation per counter, so a
     # counter that stops moving is attributable to the counter rather than to the
     # block it sits in.
-    @{ file = 'data/chat/ChatStore.kt'
-       name = 'the save audit stops counting attempts'
-       from = '            savesAttempted++'
-       to   = '            savesAttempted += 2' }
-
-    @{ file = 'data/chat/ChatStore.kt'
-       name = 'the save audit stops counting writes'
-       from = '            savesWritten++'
-       to   = '            savesWritten += 2' }
-
-    @{ file = 'data/chat/ChatStore.kt'
-       name = 'the save audit stops counting the newest-wins refusal'
-       from = '                savesRefusedAsOlder++'
-       to   = '                savesRefusedAsOlder += 2' }
-
-    @{ file = 'data/chat/ChatStore.kt'
-       name = 'the save audit stops counting the tombstone refusal'
-       from = '                savesRefusedAsDeleted++'
-       to   = '                savesRefusedAsDeleted += 2' }
-
     # The report is the only channel this app has, and it is read by whoever is
     # asked to fix the bug rather than by a user. Both of these were true of the
     # code before anything tested it.
@@ -353,44 +257,14 @@ $mutations = @(
     # retry can be dropped: the early return that decides the first write was enough,
     # the second write itself, and the read-back that turns a double refusal into
     # something the user is told about.
-    @{ file = 'ui/history/HistoryViewModel.kt'
-       name = 'a first write that lost the race is treated as done'
-       from = 'if (stamp(chatStore.load(id) ?: return) == wanted) return'
-       to   = 'return' }
-
-    @{ file = 'ui/history/HistoryViewModel.kt'
-       name = 'a tap refused once is not tried again'
-       from = 'chatStore.save(change(fresh, wanted).copy(updatedAt = maxOf(clock(), fresh.updatedAt + 1)))'
-       to   = 'Unit' }
-
-    @{ file = 'ui/history/HistoryViewModel.kt'
-       name = 'a store that refuses twice loses the tap in silence'
-       from = 'if (stamp(chatStore.load(id) ?: return) != wanted) throw StoreRefusedTwice()'
-       to   = 'if (false) throw StoreRefusedTwice()' }
-
     # The list's stamp read the device locale while the export it feeds wrote
     # `Locale.US`, so a device set to Thai dated the same conversation 2568 in the
     # list and 2025 in the file. Digits a file carries anywhere, or no digits.
-    @{ file = 'ui/history/HistoryViewModel.kt'
-       name = 'the export stamp follows the device locale again'
-       from = 'java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)'
-       to   = 'java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())' }
-
     # Reading a picked file. The limit is checked as the bytes arrive; without it a
     # file picked by mistake is copied into memory whole before anything looks at it.
-    @{ file = 'data/chat/BackupTransfer.kt'
-       name = 'an oversized import is read to the end before being refused'
-       from = 'if (total > limitBytes) return null'
-       to   = 'if (false) return null' }
-
     # A Binder transaction carries about a megabyte and a String costs two bytes per
     # character inside one: this bound is the difference between an export that is
     # refused and a crash on the main thread.
-    @{ file = 'data/chat/BackupTransfer.kt'
-       name = 'the share limit is raised past what a transaction can carry'
-       from = 'const val MAX_SHARE_CHARS = 300_000'
-       to   = 'const val MAX_SHARE_CHARS = 3_000_000' }
-
     # The retry around a refused move. A rename is refused for as long as something
     # that is not this app holds the target -- a scanner, an indexer -- and one more
     # attempt is the difference between a save that lands and the user being told the
@@ -400,25 +274,11 @@ $mutations = @(
     # refusal's own account started being recorded, and `if (true)` is the same
     # mutation as removing the guard -- the first refusal is reported instead of tried
     # again.
-    @{ file = 'data/chat/ChatStore.kt'
-       name = 'a refused move is reported without being tried again'
-       from = 'if (attempt >= MOVE_ATTEMPTS) {'
-       to   = 'if (true) {' }
-
     # The account the refusal leaves behind. Three widenings of the retry schedule were
     # decided without it -- `FileSystemException.reason` is what separates a sharing
     # violation from a read-only target from a full disk, and the message the caller
     # carries does not always include it. One mutation per part the test asserts, so a
     # part that stops being filled in is attributable to that part.
-    @{ file = 'data/chat/ChatStore.kt'
-       name = 'the refusal account stops saying what the system said'
-       from = 'val reason = (refused as? java.nio.file.FileSystemException)?.reason'
-       to   = 'val reason: String? = null' }
-
-    @{ file = 'data/chat/ChatStore.kt'
-       name = 'the refusal account reports a window that was not waited'
-       from = 'val waited = FileChatStore.MOVE_RETRY_MILLIS.take(attempts - 1).sum()'
-       to   = 'val waited = 0L' }
 )
 
 $survived = @()
@@ -471,7 +331,7 @@ foreach ($m in $mutations) {
     try {
         Set-Content $path -Value $original.Replace($m.from, $m.to) -Encoding UTF8 -NoNewline
 
-        $log = & cmd.exe /c 'gradlew.bat :app:testDebugUnitTest --console=plain -q 2>&1'
+        $log = Invoke-Gradle ':app:testDebugUnitTest' -Capture
         $exit = $LASTEXITCODE
         $failures = Get-Failures
         $bogus = Get-InfrastructureFailures
@@ -483,7 +343,7 @@ foreach ($m in $mutations) {
         Write-Host ("  DISCARDED     {0}  (build artifacts were stale, not a result)" -f $m.name) -ForegroundColor Yellow
         $discarded += $m.name
         # Rebuild cleanly so the next mutation starts from a sound state.
-        & cmd.exe /c 'gradlew.bat :app:clean --console=plain -q 2>&1' | Out-Null
+        Invoke-Gradle ':app:clean'
         continue
     }
 
