@@ -381,4 +381,8 @@
     <string name="publisher_ovis">阿里巴巴</string>
     <string name="models_modality_multimodal">多模态</string>
     <string name="models_modality_text">纯文本</string>
+    <string name="about_site_title">项目主页</string>
+    <string name="about_site_body">下载、安装说明和每个版本的更新记录都在 nullcmd.top。这个应用没有账号系统，也不会联网回传任何东西，网址写在这里只是让你找得到出处。</string>
+    <string name="about_site_action">打开 nullcmd.top</string>
+    <string name="about_mail_action">写邮件给作者</string>
 </resources>

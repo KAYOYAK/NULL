@@ -7,6 +7,10 @@ pull requests.**
 
 Use GitHub's private reporting instead:
 
+If that is not available to you, mail `x@nullcmd.top` instead. Keep the
+details out of any public issue either way.
+
+
 **[Open a private security advisory →](https://github.com/KAYOYAK/<REPO_NAME>/security/advisories/new)**
 
 If you cannot use that form, open a minimal public issue asking for a private

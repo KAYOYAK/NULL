@@ -47,6 +47,12 @@ import com.kayoyak.demoapp.formatBytes
  * across lines, the halves drift apart in review, and a translation would have to
  * find all of them.
  */
+/** 项目主页：下载与安装说明都在这一页，锚点直指下载区。 */
+private const val SITE_URL = "https://nullcmd.top/projects/null.html#download"
+
+/** 反馈与问题：站点域名上的邮箱，长期可用，不依赖任何平台账号。 */
+private const val CONTACT_EMAIL = "x@nullcmd.top"
+
 @Composable
 fun AboutScreen(
     viewModel: AboutViewModel,
@@ -127,6 +133,7 @@ internal fun AboutContent(
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val contextForLink = androidx.compose.ui.platform.LocalContext.current
     Column(modifier.verticalScroll(rememberScrollState())) {
         Column(Modifier.padding(16.dp)) {
             Text(stringResource(R.string.about_title), style = MaterialTheme.typography.headlineSmall)
@@ -207,6 +214,53 @@ internal fun AboutContent(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+
+        HorizontalDivider()
+
+        // Where this build came from. The app has no account system and never
+        // phones home, so a user who wants to know where updates live has no other
+        // way to find out than this line.
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                stringResource(R.string.about_site_title),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.about_site_body),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(Modifier.height(8.dp))
+            TextButton(
+                onClick = {
+                    val context = contextForLink
+                    runCatching {
+                        context.startActivity(
+                            android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse(SITE_URL),
+                            ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                        )
+                    }
+                },
+            ) {
+                Text(stringResource(R.string.about_site_action))
+            }
+            TextButton(
+                onClick = {
+                    runCatching {
+                        contextForLink.startActivity(
+                            android.content.Intent(
+                                android.content.Intent.ACTION_SENDTO,
+                                android.net.Uri.parse("mailto:$CONTACT_EMAIL"),
+                            ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                        )
+                    }
+                },
+            ) {
+                Text(stringResource(R.string.about_mail_action))
+            }
         }
 
         HorizontalDivider()

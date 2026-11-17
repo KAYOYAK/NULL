@@ -2,6 +2,8 @@
 
 > **一个在设备上运行小语言模型的安卓应用：界面是改造过的 chat-demo 网页，原生只留模型、设置、关于三页，以及让它的说法保持诚实的那些检查。**
 
+**获取**：安装包在 [GitHub Releases](https://github.com/KAYOYAK/NULL/releases)；下载与安装说明在 [项目主页](https://nullcmd.top/projects/null.html#download)。
+
 ## 功能
 
 - **完全在手机上运行**：模型下载完成之后断网也能用，对话不出设备
@@ -261,6 +263,11 @@ gradle/libs.versions.toml   依赖版本的唯一来源
 - **[docs/legal/TRADEMARKS-AND-CLAIMS.md](docs/legal/TRADEMARKS-AND-CLAIMS.md)** —— 与任何模型发布者无关联、本项目指名提到的商标、它不分发什么，以及怎么提出侵权主张。
 
 这两份文件都由 `scripts/check-legal-docs.ps1` 强制：任何一份缺失、没有被链接，或者不再为目录里点名的发布者署名，构建就会失败 —— 如果应用自己不再显示免责声明，也会失败。应用会离线显示一份，在**模型 → 关于**里，因为挂在网站上的文档，从它描述的那台设备上是够不到的。
+
+## 联系方式
+
+- 使用问题与反馈：`x@nullcmd.top`
+- 安全问题：按 [SECURITY.md](SECURITY.md) 走 GitHub 的私密报告，不要发公开 issue
 
 ## 参与贡献
 
