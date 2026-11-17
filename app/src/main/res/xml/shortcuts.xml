@@ -15,8 +15,8 @@
         android:shortcutShortLabel="@string/shortcut_new_chat_short"
         android:shortcutLongLabel="@string/shortcut_new_chat_long">
         <intent
-            android:action="com.kayoyak.demoapp.web.NEW_CHAT"
-            android:targetPackage="com.kayoyak.demoapp"
+            android:action="top.nullcmd.app.web.NEW_CHAT"
+            android:targetPackage="top.nullcmd.app"
             android:targetClass="com.kayoyak.demoapp.web.WebChatActivity" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>

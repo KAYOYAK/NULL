@@ -79,7 +79,10 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.kayoyak.demoapp"
+        // External identity: follows the project's own domain, and stays separate
+    // from `namespace` on purpose -- the Java packages are an implementation
+    // detail, this string is what the system, the filing and the store see.
+    applicationId = "top.nullcmd.app"
         // 26 rather than 24 for java.nio.file, which ChatStore uses to replace a
 // conversation file atomically; File.renameTo cannot do that consistently across
 // platforms. Android 8.0 is a reasonable floor for an app whose smallest model
@@ -95,8 +98,8 @@ android {
         // 1.1.0, not 1.0.2: the application id changed with the rename, so this
         // build installs beside the old app rather than over it, and a patch number
         // would promise an in-place upgrade that cannot happen.
-        versionCode = 11
-        versionName = "1.2.5"
+        versionCode = 12
+        versionName = "1.2.6"
 
         // The inference runtime is the constraint, not a preference.
         //

@@ -55,7 +55,7 @@ class WebChatActivity : ComponentActivity() {
 
     private companion object {
         /** 本应用私有：只有自己的快捷方式会发它 */
-        const val ACTION_NEW_CHAT = "com.kayoyak.demoapp.web.NEW_CHAT"
+        const val ACTION_NEW_CHAT = "top.nullcmd.app.web.NEW_CHAT"
     }
 
     private var bridge: NullLocalBridge? = null
