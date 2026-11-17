@@ -1,134 +1,54 @@
-# Working on this project
+# NULL 的工作规范
 
-Instructions for any AI agent making changes here. Human contributors should
-read [CONTRIBUTING.md](CONTRIBUTING.md).
+这份文件写给在这个仓库里干活的 AI 代理，也写给人。它记录的是**怎么干活**，不是代码怎么改——代码约定见 `CONTRIBUTING.md` 与 `docs/ROADMAP.md`。
 
-## Read this first
+## 1. 回答优先
 
-**[docs/PRINCIPLES.md](docs/PRINCIPLES.md) is binding.** Three constraints are
-non-negotiable: legal, privacy, and open-source verifiability. Every change must
-satisfy all three. They are not preferences to be traded against a feature
-request, and they are not suggestions to be relaxed when a check is inconvenient.
+1. **先回答，再动手。** 任何问题先用文字答完，再谈执行。
+2. **不回答就不开工。** 没接到明确指令，不跑工具、不占终端闷头改。
+3. **长任务先说明。** 预计超过一两分钟的操作，先讲要做什么、大概多久；讲完不会自动等于获准。
+4. **工作结果排在回答之后。** 回答是第一段；执行结果放后面，或者等用户说"做"。
+5. **不许用沉默代替结果。** 没验证过的，说没验证；做不到的，说做不到。
 
-If a task cannot be completed without violating one of them, **stop and say so**
-rather than completing it. That is the correct outcome, not a failure.
+## 2. 发布节奏
 
-## Before you build anything new
+1. **修完再发，不要修一个发一个。** 改动先累积在 `main`，不 tag。
+2. 只有用户说"发版"才打 tag；tag 会触发 `release.yml`，直接公开发布（`draft: false`）。
+3. 发版前必须：`testDebugUnitTest`、`lintDebug`、`check-readme.ps1` 通过；CI 红灯的版本要在下一次提交里修掉并说明。
+4. 版本号规则：修 bug / 文案 / 截图 → patch；新功能 → minor。`versionCode` 单调递增。
 
-Check [docs/ROADMAP.md](docs/ROADMAP.md) first. It records what is already built,
-what was deliberately refused and why, and what is next. Building something that is
-on the rejected list without reading why is the most expensive mistake available
-here.
+## 3. 边界：这个仓库只管 NULL
 
+1. **网页（`nullcmd.top`、`e-card` 仓库）不归这里。** 需要网页改动时，只输出一份 `.md` 交给网页侧的对话，不代写 HTML/CSS，不碰 `e-card`。
+2. 站点要更新的值（版本号、直链 tag、大小、SHA-256）由这里提供，一次给四个。
+3. 备案材料（包名、签名 MD5/SHA-1、版本、APK 摘要）由这里算，值必须从**发布包**里取，不能从本地调试包取。
+4. 应用内展示备案号、隐私政策链接等位置，等用户给出号码后再加。
 
-**Look at how it is done elsewhere first.** Every feature starts with a search:
-how do the on-device LLM apps on the market do this, what does the runtime
-already offer, what library exists. Building from scratch without looking is the
-most expensive thing you can do here, because the answer is usually already
-known -- and the parts that are *not* already known are exactly the parts this
-project cares about.
+## 4. 事实与验证
 
-**Why this is a rule and not a suggestion.** This app's constraints are unusual,
-so you cannot tell from the outside which parts of a familiar design are
-load-bearing and which are just habit. Two things learned the hard way:
+1. **没有在设备上验过的，不许写成"已修复"。** 写明验了什么、没验什么。
+2. 截图、GIF 必须来自**当前构建**；被删掉的界面不得留图。
+3. 数字要对得上：README、站点、备案表、发布说明里的版本/大小/哈希必须同源。
+4. 引用他人代码（chat-demo、LiteRT-LM、KaTeX 等）时，不得声称为本项目原创。
 
-- **Changelogs beat feature lists.** A feature list says what an app can do. A
-  changelog says which problems real users actually hit, which is what you need.
-  MNN Chat's release notes named four things nobody would have guessed: reasoning
-  models leak their ` thinking` block into the reply, Chinese users need a
-  domestic download source, prefill time and decode time are different
-  complaints, and users report crashes with no way to send evidence.
-- **Half the market's "must-have" list rests on things this project refuses.**
-  Model browsers, provider switching, web search, marketplaces, leaderboards and
-  LAN server modes are standard in the popular apps, and every one of them breaks
-  a constraint here. Copying the list would dismantle the constraints. So: look
-  at everything, then filter it -- see [docs/PRINCIPLES.md](docs/PRINCIPLES.md).
+## 5. 代码与门禁
 
-**Prefer a maintained library to hand-rolling** when it does the job. Here that
-has a real cost -- a new dependency needs a licence check and widens what has to
-be tracked -- so it is a trade, not a default. Say which trade you took and why.
+1. 提交前跑：`./gradlew :app:testDebugUnitTest`、`./gradlew :app:lintDebug`、`scripts/check-*.ps1`（按改动面选）。
+2. 新增权限、遥测、网络用途 → 必须同时更新 `PRIVACY.md`，否则 `check-privacy.ps1` 会失败。
+3. 新增/删除字符串、截图、模型条目 → 跑对应门禁（`check-unused-strings.ps1`、`check-readme.ps1`、`check-licenses.ps1`）。
+4. 修改 `.github/workflows/*` 需要带 `workflow` scope 的凭据；当前凭据没有，改动要交给用户在网页端完成。
+5. 提交信息写"为什么"，不写"改了什么"的流水账。
 
-**Write down what you found** in
-[docs/FEATURE-RESEARCH.md](docs/FEATURE-RESEARCH.md): who does it, what the
-standard is, and what you decided not to copy. The next feature should start from
-that file, not from the same search.
+## 6. 沟通
 
-## Hard rules
+1. 默认中文；代码与注释按仓库既有风格（英文注释、中文界面文案）。
+2. 不确定就问一次，不反复问；用户说"继续"就不再确认。
+3. 出错先承认，再给事实与修法，不找借口。
 
-These are the rules most often broken by well-intentioned changes.
+## 7. 当前状态备忘（随发版更新）
 
-**Never add a dependency without regenerating the licence lock.**
-
-```bash
-scripts/check-licenses.ps1 -Update    # after any dependency change
-```
-
-Commit `compliance/licenses.lock.json` and `THIRD_PARTY_LICENSES.md` together
-with the build file change. CI fails if they are out of sync.
-
-**Never add a telemetry, analytics, or crash-reporting SDK.** Not directly, and
-not by adding something that pulls one in transitively. The privacy gate reads
-the resolved dependency graph specifically to catch the transitive case.
-
-**Never add a permission without a reason.** Add it to `$approvedPermissions` in
-`scripts/check-privacy.ps1` with a written justification, or do not add it.
-
-**Never add a model to the catalogue without checking its licence.** The
-licence must be Apache-2.0, MIT or BSD, and the Hugging Face page must not be
-gated. Check the **upstream base model**, not the repackaged repository — a
-converter can declare a licence the original publisher never granted. See
-[docs/legal/MODEL_LICENSES.md](docs/legal/MODEL_LICENSES.md).
-
-**Never bundle model weights in the APK.**
-
-**Never hand-edit `THIRD_PARTY_LICENSES.md`.** It is generated by
-`scripts/check-licenses.ps1 -Update`.
-
-**Never weaken or delete a gate to make a change pass.** Fix the change. If you
-believe a gate is genuinely wrong, say so and explain why; do not edit it
-quietly.
-
-## Before you finish
-
-Run all seven gates. They take seconds.
-
-```bash
-scripts/check-licenses.ps1
-scripts/check-privacy.ps1
-scripts/check-embedded-notices.ps1
-scripts/check-legal-docs.ps1
-scripts/check-ui-copy.ps1
-scripts/check-ui-wiring.ps1
-scripts/check-unused-strings.ps1
-```
-
-Every one must exit zero. If any fails, the change is not ready — do not report
-it as complete. CI runs the same seven, so a gate skipped locally fails later
-with less context.
-
-A `pre-commit` hook runs them automatically. Do not bypass it with
-`--no-verify`.
-
-## Things that are true here and unusual elsewhere
-
-These will surprise an agent that assumes a typical Android project.
-
-- **The network is used only to download models.** No remote config, no
-  feature flags, no sync, no A/B tests. A feature that needs connectivity to
-  work does not belong here.
-- **There is no analytics.** Debugging happens from user-supplied logs, not
-  from data collected automatically.
-- **The dependency set is deliberately small.** Adding a library is a decision
-  with a licence and a privacy cost, not a convenience.
-- **Model files are user data located in app-private storage.** They are large
-  (hundreds of MB to several GB). Handle download resumption, storage pressure
-  and deletion as first-class concerns, not afterthoughts.
-- **The licence checks will get slower over time** because they fetch POMs.
-  The cache in `compliance/.pomcache/` is gitignored and safe to delete.
-
-## Reporting a problem with these rules
-
-If a rule blocks legitimate work, say so in the change description with the
-specific rule and the specific obstacle. A rule that is wrong should be fixed —
-in `docs/PRINCIPLES.md`, with reasoning, in its own commit. It should not be
-worked around.
+- 包名：`top.nullcmd.app`（1.2.6 起；旧 `com.kayoyak.demoapp` 不再发布）
+- 签名证书：SHA-1 `675CBFA9…08C0`，SHA-256 `52C5A8B4…D7F8`（keystore 自 1.0 未换）
+- 最新发布：`v1.2.9`
+- 站点：`https://nullcmd.top/projects/null.html#download`（下载与安装说明）、`null/privacy/`（隐私政策）
+- 待办：APP 备案 + 公安联网备案（材料见 `docs/` 之外的桌面文件）；真机语音与速度验证
