@@ -27,6 +27,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.Lifecycle
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import top.nullcmd.app.data.settings.AppTheme
@@ -123,6 +129,10 @@ class WebChatActivity : ComponentActivity() {
                 super.onPageFinished(view, url)
                 pageLoaded = true
                 shellProbeScript?.let { runCatching { webView.evaluateJavascript(it, null) } }
+                lastPushedTheme = null
+                val mode = (application as DemoApplication).container.settingsStore
+                    .settings.value.chosenTheme.name.lowercase(java.util.Locale.ROOT)
+                pushTheme(mode)
                 if (pendingNewChat) {
                     pendingNewChat = false
                     bridge?.pushNewChat()
@@ -176,6 +186,7 @@ class WebChatActivity : ComponentActivity() {
             applyWindowBackground()
         }
         webView.addJavascriptInterface(localBridge, "NullLocal")
+        pageView = webView
 
         // targetSdk 37 enforces edge-to-edge. Padding alone is not enough: the page
         // sizes itself from its own viewport (--app-viewport-height, falling back to
@@ -244,6 +255,15 @@ class WebChatActivity : ComponentActivity() {
             "if(window.NullLocal&&window.NullLocal.setShellTheme){window.NullLocal.setShellTheme(!!d)}}catch(e){}}" +
             "r();new MutationObserver(r).observe(document.body,{attributes:true,attributeFilter:['class']});})()"
         shellProbeScript = shellProbe
+        // 设置里改主题时把新值推给页面；页面自己改时值相同，不会来回。
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                container.settingsStore.settings
+                    .map { it.chosenTheme.name.lowercase(java.util.Locale.ROOT) }
+                    .distinctUntilChanged()
+                    .collect { mode -> pushTheme(mode) }
+            }
+        }
 
     }
 
@@ -314,6 +334,22 @@ class WebChatActivity : ComponentActivity() {
      * kept its default while the page turned dark: a white band under a black
      * conversation. Both are read from the same setting the page uses.
      */
+    /** onCreate 里的 WebView；主题推送要在页面加载后用到它。 */
+    private var pageView: WebView? = null
+
+    private var lastPushedTheme: String? = null
+
+    /** 把主题推给页面；同一个值不重复推。 */
+    private fun pushTheme(mode: String) {
+        if (lastPushedTheme == mode) return
+        lastPushedTheme = mode
+        pageView?.post {
+            runCatching {
+                pageView?.evaluateJavascript("window.__nullTheme && window.__nullTheme('$mode')", null)
+            }
+        }
+    }
+
     /** 页面加载完成后注入的深浅色观察脚本。 */
     private var shellProbeScript: String? = null
 

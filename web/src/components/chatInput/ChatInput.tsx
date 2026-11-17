@@ -10,7 +10,12 @@ import {
   IconStopFill16,
   IconThinkOutline14,
 } from '../base/icons.js'
-import { setSearch, setThinking, useSettings } from '../../services/settings.js'
+import {
+  setSearch,
+  setThemePreference,
+  setThinking,
+  useSettings,
+} from '../../services/settings.js'
 import { useIsMobile } from '../../app/viewport.js'
 import { newChat, sendMessage, stopReply, useChatStore } from '../../services/chat/store.js'
 import {
@@ -52,6 +57,8 @@ type ShareWindow = Window & {
   __nullSharedText?: (text: string) => void
   /** 桌面快捷方式的「新对话」 */
   __nullNewChat?: () => void
+  /** 原生设置里改了主题：让页面跟着换 */
+  __nullTheme?: (mode: 'light' | 'dark' | 'system') => void
 }
 
 if (typeof window !== 'undefined') {
@@ -59,6 +66,12 @@ if (typeof window !== 'undefined') {
   if (!host.__nullShareHookInstalled) {
     host.__nullShareHookInstalled = true
     host.__nullNewChat = () => newChat()
+    // 主题只有一份，在应用设置里；页面只是跟随，改的时候再写回去（值相同则跳过，避免来回）。
+    host.__nullTheme = (mode) => {
+      if (useSettings.getState().themePreference !== mode) {
+        setThemePreference(mode)
+      }
+    }
     host.__nullSharedText = (text: string) => {
       for (const setText of shareTargets.values()) {
         setText(text)
