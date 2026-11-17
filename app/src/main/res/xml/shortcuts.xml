@@ -17,7 +17,7 @@
         <intent
             android:action="top.nullcmd.app.web.NEW_CHAT"
             android:targetPackage="top.nullcmd.app"
-            android:targetClass="com.kayoyak.demoapp.web.WebChatActivity" />
+            android:targetClass="top.nullcmd.app.web.WebChatActivity" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
 </shortcuts>

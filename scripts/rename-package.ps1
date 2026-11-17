@@ -5,7 +5,7 @@ Renames the application id and the Kotlin package, together, in one run.
 .DESCRIPTION
 The id this project shipped until 2026-10-16, `com.example.demoapp`, was a placeholder:
 what a project generator writes before anyone owns a domain, and what Google Play refuses
-as a reserved example domain. The rename to `com.kayoyak.demoapp` is recorded in
+as a reserved example domain. The rename to `top.nullcmd.app` is recorded in
 `docs/ROADMAP.md`. The old name is read out of `app/build.gradle.kts` rather than assumed,
 so this script renames again if the id ever moves. It is not a search-and-replace -- the
 package name decides where the sources live, which classes the manifest resolves, and what

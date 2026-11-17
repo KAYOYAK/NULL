@@ -63,7 +63,7 @@ val releaseKeyPassword = signingValue(
 )
 
 android {
-    namespace = "com.kayoyak.demoapp"
+    namespace = "top.nullcmd.app"
 
     // compileSdk only decides which APIs are visible while compiling; it does
     // not change runtime behaviour. targetSdk below stays at 36 and is what
