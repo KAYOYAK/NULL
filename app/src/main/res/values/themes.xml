@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- 固定浅色主题：WebView 的 `prefers-color-scheme` 取自它，页面的深浅色
+         由页面自己的设置决定，窗口底色则跟随页面回报（见 setShellTheme）。 -->
     <style name="Theme.DemoApp" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

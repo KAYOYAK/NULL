@@ -98,8 +98,8 @@ android {
         // 1.1.0, not 1.0.2: the application id changed with the rename, so this
         // build installs beside the old app rather than over it, and a patch number
         // would promise an in-place upgrade that cannot happen.
-        versionCode = 12
-        versionName = "1.2.6"
+        versionCode = 13
+        versionName = "1.2.7"
 
         // The inference runtime is the constraint, not a preference.
         //

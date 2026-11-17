@@ -11,7 +11,7 @@ export const zh = {
   sessionSaveFailed: '对话或附件尚未保存到本机，关闭页面可能丢失，请重试',
   sessionDeleteFailed: '删除对话失败，请重试',
   settings: '设置',
-  appName: 'API 使用 demo',
+  appName: 'NULL',
   deleteMessage: '删除这条回答',
   deleteExchange: '删除这组问答',
   deleteMessageBody: '这条回答会被删掉。没有撤销。',

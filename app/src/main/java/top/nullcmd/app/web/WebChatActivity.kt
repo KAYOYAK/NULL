@@ -122,6 +122,7 @@ class WebChatActivity : ComponentActivity() {
             override fun onPageFinished(view: WebView, url: String?) {
                 super.onPageFinished(view, url)
                 pageLoaded = true
+                shellProbeScript?.let { runCatching { webView.evaluateJavascript(it, null) } }
                 if (pendingNewChat) {
                     pendingNewChat = false
                     bridge?.pushNewChat()
@@ -165,6 +166,15 @@ class WebChatActivity : ComponentActivity() {
             micPermission.launch(Manifest.permission.RECORD_AUDIO)
         }
         bridge = localBridge
+        // 页面自己有主题设置；外壳颜色跟它，而不是跟系统。
+        localBridge.onShellColor = { colour ->
+            shellColour = colour
+            applyWindowBackground()
+        }
+        localBridge.onShellTheme = { dark ->
+            shellDark = dark
+            applyWindowBackground()
+        }
         webView.addJavascriptInterface(localBridge, "NullLocal")
 
         // targetSdk 37 enforces edge-to-edge. Padding alone is not enough: the page
@@ -176,13 +186,19 @@ class WebChatActivity : ComponentActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(webView) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            // 刘海/挖孔：systemBars 不含它，单独取出来和状态栏高度取大者。
+            val cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+            val top = maxOf(bars.top, cutout.top)
+            val bottomInset = maxOf(bars.bottom, cutout.bottom)
             val params = view.layoutParams as? ViewGroup.MarginLayoutParams
-            val bottom = maxOf(bars.bottom, ime.bottom)
+            val bottom = maxOf(bottomInset, ime.bottom)
             if (params != null && params.bottomMargin != bottom) {
                 params.bottomMargin = bottom
                 view.layoutParams = params
             }
-            view.setPadding(0, bars.top, 0, 0)
+            // WebView 不把 padding 用在内容区上（它按自己的视口画），所以
+            // 顶部让出状态栏这件事必须由外层容器做；底部仍用 margin 缩短视口。
+            rootView?.setPadding(0, top, 0, 0)
             insets
         }
 
@@ -221,6 +237,14 @@ class WebChatActivity : ComponentActivity() {
         takeShare(intent)
         takeNewChat(intent)
         webView.loadUrl("https://appassets.androidplatform.net/assets/web/index.html")
+
+        // 观察页面的深浅色 class，一次注入，之后每次切换都会回报。
+        val shellProbe = "(function(){function r(){try{var d=document.body&&document.body.classList.contains('dark');" +
+            "if(window.NullLocal&&window.NullLocal.setShellColor){window.NullLocal.setShellColor(getComputedStyle(document.body).backgroundColor)}" +
+            "if(window.NullLocal&&window.NullLocal.setShellTheme){window.NullLocal.setShellTheme(!!d)}}catch(e){}}" +
+            "r();new MutationObserver(r).observe(document.body,{attributes:true,attributeFilter:['class']});})()"
+        shellProbeScript = shellProbe
+
     }
 
     /**
@@ -290,6 +314,15 @@ class WebChatActivity : ComponentActivity() {
      * kept its default while the page turned dark: a white band under a black
      * conversation. Both are read from the same setting the page uses.
      */
+    /** 页面加载完成后注入的深浅色观察脚本。 */
+    private var shellProbeScript: String? = null
+
+    /** 页面回报的背景色；null 表示页面还没说话。 */
+    private var shellColour: Int? = null
+
+    /** 页面回报的深浅色；null 表示页面还没说话，暂时按设置推断。 */
+    private var shellDark: Boolean? = null
+
     private fun applyWindowBackground() {
         val settings = (application as DemoApplication).container.settingsStore.settings.value
         val dark = when (settings.chosenTheme) {
@@ -299,13 +332,25 @@ class WebChatActivity : ComponentActivity() {
                 (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
                     Configuration.UI_MODE_NIGHT_YES
         }
-        val colour = if (dark) 0xFF121212.toInt() else 0xFFFFFFFF.toInt()
+        val effective = shellDark ?: dark
+        val colour = shellColour ?: if (effective) 0xFF121212.toInt() else 0xFFFFFFFF.toInt()
+        // 图标明暗按实际底色算亮度，而不是靠 dark 标志。
+        val luminance = ((colour shr 16 and 0xFF) * 299 + (colour shr 8 and 0xFF) * 587 + (colour and 0xFF) * 114) / 1000
+        val lightIcons = luminance < 128
         rootView.setBackgroundColor(colour)
         window.decorView.setBackgroundColor(colour)
+        // 旧式主题把导航栏画成黑色；显式上色，并关掉对比度遮罩。
+        // 两个栏的颜色必须和页面底色一致，否则浅色页面上会出现黑带。
+        @Suppress("DEPRECATION")
+        run {
+            window.statusBarColor = colour
+            window.navigationBarColor = colour
+            window.isNavigationBarContrastEnforced = false
+        }
         // 图标颜色也得跟着换：浅色主题 + 系统深色时，白色图标会压在白色页面上。
         WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = !dark
-            isAppearanceLightNavigationBars = !dark
+            isAppearanceLightStatusBars = !lightIcons
+            isAppearanceLightNavigationBars = !lightIcons
         }
     }
 

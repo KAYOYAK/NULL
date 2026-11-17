@@ -231,6 +231,38 @@ class NullLocalBridge(
     fun theme(): String =
         container.settingsStore.settings.value.chosenTheme.name.lowercase(Locale.ROOT)
 
+    /** 页面当前实际渲染的深浅色；窗口底色跟着它走，不再跟系统走。 */
+    var onShellTheme: ((Boolean) -> Unit)? = null
+
+    /** 页面实际的背景色，状态栏/导航栏区域只放这个颜色。 */
+    var onShellColor: ((Int) -> Unit)? = null
+
+    @JavascriptInterface
+    fun setShellColor(color: String) {
+        val parsed = parseCssColor(color) ?: return
+        val callback = onShellColor ?: return
+        main.post { callback(parsed) }
+    }
+
+    @JavascriptInterface
+    fun setShellTheme(dark: Boolean) {
+        val callback = onShellTheme ?: return
+        main.post { callback(dark) }
+    }
+
+    private fun parseCssColor(value: String): Int? {
+        val text = value.trim()
+        Regex("rgba?\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)").find(text)?.let { m ->
+            val r = m.groupValues[1].toIntOrNull() ?: return null
+            val g = m.groupValues[2].toIntOrNull() ?: return null
+            val b = m.groupValues[3].toIntOrNull() ?: return null
+            return (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+        }
+        val hex = text.removePrefix("#")
+        if (hex.length == 6) return (0xFF000000.toInt()) or hex.toLong(16).toInt()
+        return null
+    }
+
     @JavascriptInterface
     fun setTheme(theme: String): Boolean {
         val parsed = AppTheme.entries.firstOrNull { it.name.equals(theme, ignoreCase = true) }

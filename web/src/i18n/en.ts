@@ -14,7 +14,7 @@ export const en = {
     'Chats or attachments have not been saved locally. Retry before closing this page.',
   sessionDeleteFailed: 'Unable to delete this chat. Please try again.',
   settings: 'Settings',
-  appName: 'API usage demo',
+  appName: 'NULL',
   deleteMessage: 'Delete this reply',
   deleteExchange: 'Delete this question and its reply',
   deleteMessageBody: 'The reply is removed. There is no undo.',
