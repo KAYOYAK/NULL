@@ -381,7 +381,9 @@ class WebChatActivity : ComponentActivity() {
         run {
             window.statusBarColor = colour
             window.navigationBarColor = colour
-            window.isNavigationBarContrastEnforced = false
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                window.isNavigationBarContrastEnforced = false
+            }
         }
         // 图标颜色也得跟着换：浅色主题 + 系统深色时，白色图标会压在白色页面上。
         WindowCompat.getInsetsController(window, window.decorView).apply {
