@@ -308,3 +308,32 @@ unknown, and this project has already broken that promise twice in one afternoon
 (2026-10-16): a "nothing left" was followed by a reading that found a channel the
 engine never read, and the next one by a reading that found a pipeline no test had
 ever driven end to end. Say which claim is being made.
+
+## The toolchain refresh (2026-11-20)
+
+The owner asked whether everything used to build this was on its latest version. Most of it
+was not: the build was a year of patch releases behind in Gradle and AGP, the Compose BOM was
+eight months old, and the page still ran React 18. Everything with a stable release was moved
+to it, verified by the same gates as any other change (`testDebugUnitTest`, `lintDebug`,
+`assembleDebug`, the page's `tsc` and `rspack build`, and a launch on the emulator).
+
+| Component | Was | Now | Note |
+|---|---|---|---|
+| Gradle | 9.1.0 | 9.9.2 | wrapper checksum re-pinned to the official one; the mirror file matches it |
+| Android Gradle Plugin | 9.0.1 | 9.5.1 | the androidx releases below require 9.1.0 or newer |
+| Compose BOM | 2026.03.01 | 2026.11.01 | ui 1.13.0 |
+| androidx core / lifecycle / fragment / navigation3 | 1.18.0 / 2.10.0 / 1.8.9 / 1.0.1 | 1.19.1 / 2.11.1 / 1.9.1 / 1.2.2 | |
+| kotlinx-serialization / okhttp | 1.11.0 / 5.5.0 | 1.13.0 / 5.5.1 | |
+| React / React DOM | 18.3.1 | 19.3.1 | typecheck, build and the emulator launch pass unchanged |
+| zustand | 4.4.7 | 5.1.0 | |
+| katex / mermaid / prismjs | 0.16.22 / 11.10.1 / 1.30.0 | 0.19.1 / 12.3.0 / 1.30.0 | |
+| Rspack | 2.0.2 | 2.3.3 | |
+| pnpm | 11.7.0 | 12.21.0 | pinned in `web/package.json`; lockfile regenerated |
+| Node (machine) | 26.6.0 | 26.13.1 LTS | not a repository fact; the repo has no Node pin |
+
+Deliberately not upgraded, because they are pre-releases: Kotlin 2.5.0-RC (2.4.21 is the
+latest stable), AGP 9.6.0-alpha, Node 27.0.0-alpha. Kotlin and TypeScript were already on
+their latest stable releases.
+
+`jvmTarget` stays 17: it is the language level the app is built against for Android, not a
+tool that can be "kept current" by raising a number.

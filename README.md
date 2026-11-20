@@ -110,12 +110,13 @@
 
 | 工具 | 本项目使用的版本 |
 | --- | --- |
-| JDK | 17（Gradle 工具链） |
+| JDK | 17（Gradle 工具链；构建用 17，设备侧最低 26） |
 | Android SDK Platform | 37.2（`compileSdk` 37.2 / `targetSdk` 37） |
 | 最低 Android 版本 | 26（`minSdk`） |
-| Gradle | 9.1.0 |
-| Android Gradle Plugin | 9.0.1 |
+| Gradle | 9.9.2 |
+| Android Gradle Plugin | 9.5.1 |
 | Kotlin | 2.4.21 |
+| Compose BOM | 2026.11.01 |
 
 ## 构建
 

@@ -1,0 +1,1 @@
+"use strict";(self.rspackChunkchat_demo=self.rspackChunkchat_demo||[]).push([[5165],{252(e,c,r){var s=r(4561);r(508),r.d(c,{createArchitectureServices:()=>s.S})}}]);
