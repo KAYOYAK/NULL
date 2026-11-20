@@ -1,7 +1,7 @@
 {
   "generatedWith": "check-licenses.ps1 -Update",
   "configuration": "releaseRuntimeClasspath",
-  "artifactCount": 137,
+  "artifactCount": 136,
   "artifacts": [
     {
       "coordinate": "androidx.activity:activity-compose:1.13.0",
@@ -76,67 +76,67 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.collection:collection-jvm:1.5.0",
+      "coordinate": "androidx.collection:collection-jvm:1.6.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.collection:collection-ktx:1.5.0",
+      "coordinate": "androidx.collection:collection-ktx:1.6.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.collection:collection:1.5.0",
+      "coordinate": "androidx.collection:collection:1.6.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.animation:animation-android:1.10.6",
+      "coordinate": "androidx.compose.animation:animation-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.animation:animation-core-android:1.10.6",
+      "coordinate": "androidx.compose.animation:animation-core-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.animation:animation-core:1.10.6",
+      "coordinate": "androidx.compose.animation:animation-core:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.animation:animation:1.10.6",
+      "coordinate": "androidx.compose.animation:animation:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.foundation:foundation-android:1.10.6",
+      "coordinate": "androidx.compose.foundation:foundation-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.foundation:foundation-layout-android:1.10.6",
+      "coordinate": "androidx.compose.foundation:foundation-layout-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.foundation:foundation-layout:1.10.6",
+      "coordinate": "androidx.compose.foundation:foundation-layout:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.foundation:foundation:1.10.6",
+      "coordinate": "androidx.compose.foundation:foundation:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -154,157 +154,169 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.material:material-ripple-android:1.10.6",
+      "coordinate": "androidx.compose.material:material-ripple-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.material:material-ripple:1.10.6",
+      "coordinate": "androidx.compose.material:material-ripple:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.material3:material3-android:1.4.0",
+      "coordinate": "androidx.compose.material3:material3-android:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.material3:material3:1.4.0",
+      "coordinate": "androidx.compose.material3:material3-ripple-android:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.runtime:runtime-android:1.10.6",
+      "coordinate": "androidx.compose.material3:material3-ripple:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.runtime:runtime-annotation-android:1.10.6",
+      "coordinate": "androidx.compose.material3:material3:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.runtime:runtime-annotation:1.10.6",
+      "coordinate": "androidx.compose.runtime:runtime-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.runtime:runtime-retain-android:1.10.6",
+      "coordinate": "androidx.compose.runtime:runtime-annotation-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.runtime:runtime-retain:1.10.6",
+      "coordinate": "androidx.compose.runtime:runtime-annotation:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.runtime:runtime-saveable-android:1.10.6",
+      "coordinate": "androidx.compose.runtime:runtime-retain-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.runtime:runtime-saveable:1.10.6",
+      "coordinate": "androidx.compose.runtime:runtime-retain:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.runtime:runtime:1.10.6",
+      "coordinate": "androidx.compose.runtime:runtime-saveable-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-android:1.10.6",
+      "coordinate": "androidx.compose.runtime:runtime-saveable:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-geometry-android:1.10.6",
+      "coordinate": "androidx.compose.runtime:runtime:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-geometry:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-graphics-android:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-geometry-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-graphics:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-geometry:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-text-android:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-graphics-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-text:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-graphics:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-tooling-preview-android:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-text-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-tooling-preview:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-text:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-unit-android:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-tooling-preview-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-unit:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-tooling-preview:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-util-android:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-unit-android:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui-util:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-unit:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.compose.ui:ui:1.10.6",
+      "coordinate": "androidx.compose.ui:ui-util-android:1.13.0",
+      "licenceId": "Apache-2.0",
+      "licenceRaw": "The Apache Software License, Version 2.0",
+      "source": "pom"
+    },
+    {
+      "coordinate": "androidx.compose.ui:ui-util:1.13.0",
+      "licenceId": "Apache-2.0",
+      "licenceRaw": "The Apache Software License, Version 2.0",
+      "source": "pom"
+    },
+    {
+      "coordinate": "androidx.compose.ui:ui:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -316,7 +328,7 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.core:core-ktx:1.18.0",
+      "coordinate": "androidx.core:core-ktx:1.19.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -328,7 +340,7 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.core:core:1.18.0",
+      "coordinate": "androidx.core:core:1.19.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -352,43 +364,43 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.documentfile:documentfile:1.0.0",
-      "licenceId": "Apache-2.0",
-      "licenceRaw": "The Apache Software License, Version 2.0",
-      "source": "pom"
-    },
-    {
       "coordinate": "androidx.drawerlayout:drawerlayout:1.0.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.dynamicanimation:dynamicanimation:1.0.0",
+      "coordinate": "androidx.emoji2:emoji2:1.7.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.emoji2:emoji2:1.4.0",
+      "coordinate": "androidx.fragment:fragment-ktx:1.9.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.fragment:fragment-ktx:1.8.9",
+      "coordinate": "androidx.fragment:fragment:1.9.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.fragment:fragment:1.8.9",
+      "coordinate": "androidx.graphics:graphics-path:1.1.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.graphics:graphics-path:1.0.1",
+      "coordinate": "androidx.graphics:graphics-shapes-android:1.0.1",
+      "licenceId": "Apache-2.0",
+      "licenceRaw": "The Apache Software License, Version 2.0",
+      "source": "pom"
+    },
+    {
+      "coordinate": "androidx.graphics:graphics-shapes:1.0.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -400,139 +412,133 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.legacy:legacy-support-core-utils:1.0.0",
+      "coordinate": "androidx.lifecycle:lifecycle-common-java8:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-common-java8:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-common-jvm:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-common-jvm:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-common:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-common:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-livedata-core-ktx:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-livedata-core-ktx:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-livedata-core:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-livedata-core:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-livedata:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-livedata:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-process:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-process:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-runtime-android:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-runtime-android:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-runtime-compose-android:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-runtime-compose-android:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-runtime-compose:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-runtime-compose:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-runtime-ktx-android:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-runtime-ktx-android:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-runtime-ktx:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-runtime-ktx:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-runtime:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-runtime:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-android:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-android:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose-android:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose-android:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-navigation3-android:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-navigation3-android:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-navigation3:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.10.0",
-      "licenceId": "Apache-2.0",
-      "licenceRaw": "The Apache Software License, Version 2.0",
-      "source": "pom"
-    },
-    {
-      "coordinate": "androidx.lifecycle:lifecycle-viewmodel:2.10.0",
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel:2.11.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -544,61 +550,49 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.localbroadcastmanager:localbroadcastmanager:1.0.0",
+      "coordinate": "androidx.navigation3:navigation3-runtime-android:1.2.2",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.navigation3:navigation3-runtime-android:1.0.1",
+      "coordinate": "androidx.navigation3:navigation3-runtime:1.2.2",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.navigation3:navigation3-runtime:1.0.1",
+      "coordinate": "androidx.navigation3:navigation3-ui-android:1.2.2",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.navigation3:navigation3-ui-android:1.0.1",
+      "coordinate": "androidx.navigation3:navigation3-ui:1.2.2",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.navigation3:navigation3-ui:1.0.1",
+      "coordinate": "androidx.navigationevent:navigationevent-android:1.1.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.navigationevent:navigationevent-android:1.0.2",
+      "coordinate": "androidx.navigationevent:navigationevent-compose-android:1.1.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.navigationevent:navigationevent-compose-android:1.0.2",
+      "coordinate": "androidx.navigationevent:navigationevent-compose:1.1.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.navigationevent:navigationevent-compose:1.0.2",
-      "licenceId": "Apache-2.0",
-      "licenceRaw": "The Apache Software License, Version 2.0",
-      "source": "pom"
-    },
-    {
-      "coordinate": "androidx.navigationevent:navigationevent:1.0.2",
-      "licenceId": "Apache-2.0",
-      "licenceRaw": "The Apache Software License, Version 2.0",
-      "source": "pom"
-    },
-    {
-      "coordinate": "androidx.print:print:1.0.0",
+      "coordinate": "androidx.navigationevent:navigationevent:1.1.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -610,31 +604,31 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.savedstate:savedstate-android:1.4.0",
+      "coordinate": "androidx.savedstate:savedstate-android:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.savedstate:savedstate-compose-android:1.4.0",
+      "coordinate": "androidx.savedstate:savedstate-compose-android:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.savedstate:savedstate-compose:1.4.0",
+      "coordinate": "androidx.savedstate:savedstate-compose:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.savedstate:savedstate-ktx:1.4.0",
+      "coordinate": "androidx.savedstate:savedstate-ktx:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.savedstate:savedstate:1.4.0",
+      "coordinate": "androidx.savedstate:savedstate:1.5.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -646,13 +640,13 @@
       "source": "pom"
     },
     {
-      "coordinate": "androidx.tracing:tracing:1.2.0",
+      "coordinate": "androidx.tracing:tracing-android:2.0.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "androidx.transition:transition:1.6.0",
+      "coordinate": "androidx.tracing:tracing:2.0.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -730,13 +724,13 @@
       "source": "manual: https://github.com/google/guava/blob/master/android/guava/src/com/google/common/util/concurrent/listenablefuture/ListenableFuture.java"
     },
     {
-      "coordinate": "com.squareup.okhttp3:okhttp-android:5.5.0",
+      "coordinate": "com.squareup.okhttp3:okhttp-android:5.5.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
     },
     {
-      "coordinate": "com.squareup.okhttp3:okhttp:5.5.0",
+      "coordinate": "com.squareup.okhttp3:okhttp:5.5.1",
       "licenceId": "Apache-2.0",
       "licenceRaw": "The Apache Software License, Version 2.0",
       "source": "pom"
@@ -796,25 +790,25 @@
       "source": "pom"
     },
     {
-      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.11.0",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "Apache-2.0",
       "source": "pom"
     },
     {
-      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "Apache-2.0",
       "source": "pom"
     },
     {
-      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.11.0",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "Apache-2.0",
       "source": "pom"
     },
     {
-      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0",
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0",
       "licenceId": "Apache-2.0",
       "licenceRaw": "Apache-2.0",
       "source": "pom"
