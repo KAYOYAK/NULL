@@ -329,7 +329,7 @@ to it, verified by the same gates as any other change (`testDebugUnitTest`, `lin
 | katex / mermaid / prismjs | 0.16.22 / 11.10.1 / 1.30.0 | 0.19.1 / 12.3.0 / 1.30.0 | |
 | Rspack | 2.0.2 | 2.3.3 | |
 | pnpm | 11.7.0 | 12.21.0 | pinned in `web/package.json`; lockfile regenerated |
-| Node (machine) | 26.6.0 | 26.13.1 LTS | not a repository fact; the repo has no Node pin |
+| Node (machine) | 26.6.0 | 26.13.1 LTS | installed from the official MSI after checking its SHA-256; a running DSH keeps the old binary until it is restarted. The repo itself has no Node pin |
 
 Deliberately not upgraded, because they are pre-releases: Kotlin 2.5.0-RC (2.4.21 is the
 latest stable), AGP 9.6.0-alpha, Node 27.0.0-alpha. Kotlin and TypeScript were already on
