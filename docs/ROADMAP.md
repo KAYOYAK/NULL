@@ -337,3 +337,11 @@ their latest stable releases.
 
 `jvmTarget` stays 17: it is the language level the app is built against for Android, not a
 tool that can be "kept current" by raising a number.
+
+The machine-level JDKs were then consolidated to the newest one. Three were installed
+(17, 25, 27) with JAVA_HOME and PATH pointing at 25 -- the middle one. A clean build
+(clean testDebugUnitTest assembleDebug lintDebug) passed on 27, so 17 and 25 were deleted
+and the machine variables now name 27. The project's sourceCompatibility/	argetCompatibility
+stay at 17: that is the language level the app targets for Android, not the JDK that runs
+Gradle. CI still sets up Java 17 in its workflows; both work, and changing them would need a
+token with workflow scope, which this checkout does not have.
