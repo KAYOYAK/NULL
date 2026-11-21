@@ -51,7 +51,11 @@ $wrapper = Get-Text (Join-Path $RepoRoot 'gradle/wrapper/gradle-wrapper.properti
 $violations = [System.Collections.Generic.List[string]]::new()
 
 # ---------------------------------------------------------------- versions ---
+# 没有 jvmToolchain 声明的工程，用字节码目标回答"这台机器要什么 Java 版本发布出来的 APK"
 $jdk = [regex]::Match($build, 'jvmToolchain\((\d+)\)')
+if (-not $jdk.Success) {
+    $jdk = [regex]::Match($build, 'targetCompatibility\s*=\s*JavaVersion\.VERSION_(\d+)')
+}
 $compileSdk = [regex]::Match($build, 'compileSdk\s*\{\s*version\s*=\s*release\((\d+)\)\s*\{\s*minorApiLevel\s*=\s*(\d+)')
 $minSdk = [regex]::Match($build, '(?m)^\s*minSdk\s*=\s*(\d+)')
 $gradle = [regex]::Match($wrapper, 'gradle-([0-9.]+)-bin\.zip')

@@ -110,7 +110,7 @@
 
 | 工具 | 本项目使用的版本 |
 | --- | --- |
-| JDK | 17（Gradle 工具链；构建用 17，设备侧最低 26） |
+| JDK | 17（字节码目标；运行 Gradle 的 JDK 是 27） |
 | Android SDK Platform | 37.2（`compileSdk` 37.2 / `targetSdk` 37） |
 | 最低 Android 版本 | 26（`minSdk`） |
 | Gradle | 9.9.2 |
