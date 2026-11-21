@@ -73,7 +73,7 @@ $modelName  = Split-Path -Leaf $ModelPath
 # remembered to set it is a script that fails the first time it is run from
 # somewhere else.
 if (-not $env:JAVA_HOME -or -not (Test-Path (Join-Path $env:JAVA_HOME 'bin\java.exe'))) {
-    $candidate = Get-ChildItem 'D:\Program Files\Eclipse Adoptium' -Directory -ErrorAction SilentlyContinue |
+    $candidate = Get-ChildItem 'C:\Program Files\Eclipse Adoptium','D:\Program Files\Eclipse Adoptium' -Directory -Filter 'jdk-*' -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -like 'jdk-2*' } |
         Sort-Object Name -Descending |
         Select-Object -First 1

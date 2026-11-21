@@ -20,9 +20,11 @@ $appPkg = Get-AppPackage $root
 # this script did not run anywhere else -- including CI, which is the one place a sweep
 # is worth having, because a survivor list nobody looks at is a comment.
 if (-not $env:JAVA_HOME -or -not (Test-Path $env:JAVA_HOME)) {
-    foreach ($candidate in @('D:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot')) {
-        if (Test-Path $candidate) { $env:JAVA_HOME = $candidate; break }
-    }
+    # 机器上 JDK 只剩一份（27），位置会随安装方式变，所以扫两个 Program Files 取最新。
+    $roots = @('C:\Program Files\Eclipse Adoptium', 'D:\Program Files\Eclipse Adoptium')
+    $jdk = Get-ChildItem -Path $roots -Directory -Filter 'jdk-*' -ErrorAction SilentlyContinue |
+        Sort-Object Name -Descending | Select-Object -First 1
+    if ($jdk) { $env:JAVA_HOME = $jdk.FullName }
 }
 Set-Location $root
 

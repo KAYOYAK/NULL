@@ -161,7 +161,11 @@ android {
 }
 
 kotlin {
-    jvmToolchain(17)
+    // 不用 jvmToolchain：它会要求机器上装一份对应版本的 JDK，本机只有 27 时会直接失败。
+    // 用当前 JDK 编译，字节码仍按 17 出，与 compileOptions 保持一致。
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 dependencies {
