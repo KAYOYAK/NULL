@@ -385,6 +385,7 @@
     <string name="about_site_body">下载、安装说明和每个版本的更新记录都在 nullcmd.top。这个应用没有账号系统，也不会联网回传任何东西，网址写在这里只是让你找得到出处。</string>
     <string name="about_site_action">打开 nullcmd.top</string>
     <string name="about_mail_action">写邮件给作者</string>
+    <string name="about_filing_number" translatable="false">桂ICP备2026027311号-2A</string>
     <string name="about_filing_title">备案信息</string>
     <string name="about_filing_body">APP 备案号：%1$s</string>
     <string name="about_filing_action">去工信部查询</string>
