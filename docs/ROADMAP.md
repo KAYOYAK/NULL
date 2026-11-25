@@ -347,3 +347,26 @@ build with only 27 present then passed. The project's sourceCompatibility/	arget
 stay at 17: that is the language level the app targets for Android, not the JDK that runs
 Gradle. CI still sets up Java 17 in its workflows; both work, and changing them would need a
 token with workflow scope, which this checkout does not have.
+
+## The test device moves to Android 17 (2026-11-25)
+
+The app has compiled against API 37 for a while while the emulator still ran Android 16, so
+target-37 behaviour was never exercised. The AVDs were rebuilt around `system-images;android-37.0`.
+
+| Image | Result |
+|---|---|
+| `google_apis_playstore;x86_64` | **unusable**: `surfaceflinger` aborts in `RegionSamplingThread` with `Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma`, restarts in a loop, screen flashes wallpaper or goes white. The image's `source.properties` declares `Pkg.Dependencies=emulator#37.2.11`; this machine runs 37.3.10 and the canary 37.4.2, and both trip it. Disabling `GLDMA`/`GLDMA2` in `advancedFeatures.ini` changes nothing. |
+| `aosp_atd;x86_64` | no crash, but the image has no launcher: `screencap` returns black frames and there is nothing to look at |
+| `default;x86_64` (AOSP) | **used**: Launcher3 present, `screencap` returns real frames, the app renders and runs |
+
+The surviving AVD is `null_17`: AOSP `android-37.0` x86_64, device profile `pixel_9_pro_xl`,
+4096 MB RAM. The SDK has no Pixel 10 or 11 device profiles — `pixel_9_pro_xl` is the newest one it
+ships — so the model string stays `sdk_gphone64_x86_64` regardless.
+
+Tooling moved with it: `platform-tools` 37.0.3, `cmdline-tools` 23.0, emulator on the canary channel
+(37.4.2). Installing any SDK package while an emulator runs leaves the extraction half-done
+(`Failed to extract package archive ... crashpad_handler.exe`), and `platform-tools` additionally
+fails while the adb server holds `adb.exe`; both were hit before the pattern was obvious.
+
+Not verified on 17: model download and generation — that needs a model in the AVD and was left out of
+this pass.
