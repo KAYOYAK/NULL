@@ -359,6 +359,9 @@ target-37 behaviour was never exercised. The AVDs were rebuilt around `system-im
 | `aosp_atd;x86_64` | no crash, but the image has no launcher: `screencap` returns black frames and there is nothing to look at |
 | `default;x86_64` (AOSP) | **used**: Launcher3 present, `screencap` returns real frames, the app renders and runs |
 
+Both other images were then removed: the Play Store one because it cannot run, the ATD one because
+there is nothing to look at. One device, one image.
+
 The surviving AVD is `null_17`: AOSP `android-37.0` x86_64, device profile `pixel_9_pro_xl`,
 4096 MB RAM. The SDK has no Pixel 10 or 11 device profiles — `pixel_9_pro_xl` is the newest one it
 ships — so the model string stays `sdk_gphone64_x86_64` regardless.
