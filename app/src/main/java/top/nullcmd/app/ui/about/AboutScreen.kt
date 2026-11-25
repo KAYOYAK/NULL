@@ -53,6 +53,12 @@ private const val SITE_URL = "https://nullcmd.top/projects/null.html#download"
 /** 反馈与问题：站点域名上的邮箱，长期可用，不依赖任何平台账号。 */
 private const val CONTACT_EMAIL = "x@nullcmd.top"
 
+/** 工信部 APP 备案号；号段由省通信管理局下发，变更主体或包名才需要重备。 */
+private const val FILING_NUMBER = "桂ICP备2026027311号-2A"
+
+/** 备案信息查询入口。 */
+private const val FILING_QUERY_URL = "https://beian.miit.gov.cn/"
+
 @Composable
 fun AboutScreen(
     viewModel: AboutViewModel,
@@ -260,6 +266,35 @@ internal fun AboutContent(
                 },
             ) {
                 Text(stringResource(R.string.about_mail_action))
+            }
+        }
+
+        // 备案号是监管要求展示的事实，不是宣传：放在“关于”里，一行字，
+        // 点开是工信部的公开查询页，用户不必相信这里的措辞也能自己核。
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                stringResource(R.string.about_filing_title),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.about_filing_body, FILING_NUMBER),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Spacer(Modifier.height(8.dp))
+            TextButton(
+                onClick = {
+                    runCatching {
+                        contextForLink.startActivity(
+                            android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse(FILING_QUERY_URL),
+                            ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                        )
+                    }
+                },
+            ) {
+                Text(stringResource(R.string.about_filing_action))
             }
         }
 
